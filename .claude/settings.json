@@ -1,0 +1,63 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm run *)",
+      "Bash(npx tsc*)",
+      "Bash(npx vitest*)",
+      "Bash(npx prettier*)",
+      "Bash(npx supabase*)",
+      "Bash(git status*)",
+      "Bash(git diff*)",
+      "Bash(git log*)",
+      "Bash(git show*)",
+      "Bash(git add*)",
+      "Bash(find . *)",
+      "Bash(grep *)",
+      "Bash(ls *)",
+      "Bash(cat *)",
+      "Bash(mkdir *)",
+      "Bash(cp *)",
+      "Bash(mv *)",
+      "Bash(node *)",
+      "Bash(curl *)",
+      "Bash(npx eslint*)"
+    ],
+    "deny": []
+  },
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "startup|clear|compact",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "CLAUDE_PLUGIN_ROOT=$(pwd)/.claude/plugins/superpowers bash .claude/plugins/superpowers/hooks/session-start",
+            "async": false
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "input=$(cat); echo \"$input\" | grep -qE '\"file_path\"\\s*:\\s*\"[^\"]*\\.(ts|tsx)\"' && npx tsc --noEmit 2>&1 | grep 'error TS' | head -8 || true"
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "cat | grep -qE '\"command\".*?(git push --force|git reset --hard|rm -rf|DROP TABLE|TRUNCATE)' && echo 'WARNING: 破壊的操作を検知しました。実行前に確認してください。' || true"
+          }
+        ]
+      }
+    ]
+  }
+}
