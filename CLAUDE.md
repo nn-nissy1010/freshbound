@@ -33,30 +33,48 @@ src/
   app/
     (auth)/                   # 認証グループ（ログイン前）
       login/
-    (dashboard)/              # ログイン後グループ
+    (dashboard)/              # 顧客向けグループ
       dashboard/              # F-09 ダッシュボード
       companies/              # F-02 企業リスト・F-03A 電話番号表示
       campaigns/              # F-06 配信管理・F-07 反応検知
       csv-import/             # F-02B CSV取込
       unsubscribe-list/       # F-06A 配信停止管理
       icp/                    # F-01 ICP設定
+    admin/                    # 管理者パネル（Control Tower）— Super Adminのみ
+      dashboard/              # FA-01 管理者ダッシュボード
+      tenants/                # FA-02 テナント管理（顧客一覧）
+        agencies/             # FA-03 代理店一覧
+      users/                  # FA-04 ユーザー管理
+      delivery/               # FA-05 配信監視
+        campaigns/            # キャンペーン監視
+        email-logs/           # メールログ
+        unsubscribes/         # 配信停止管理
+      csv/                    # FA-06 CSV管理
+      api-monitor/            # FA-07 API・外部サービス監視
+      analytics/              # FA-08 分析
+      settings/               # FA-09 システム設定（7タブ）
+      audit-logs/             # FA-10 監査ログ
     api/
       auth/
       companies/
       campaigns/
       csv/
+      admin/                  # 管理者API（サービスロールキー必須）
       webhooks/
         sendgrid/             # 開封・クリック Webhook（F-07）
+        stripe/               # Stripe Webhook（FB-01）
         line/
   components/
     ui/                       # 汎用UIコンポーネント（Button, Card, Table 等）
     forms/
     layouts/
+    admin/                    # 管理者パネル専用コンポーネント
   lib/
     supabase/                 # Supabase クライアント（server/client 分離）
     sendgrid/                 # SendGrid 連携（F-06）
     openai/                   # GPT-4o-mini 連携（F-05）
     line/                     # LINE Messaging API（F-08）
+    stripe/                   # Stripe 連携（FB-01）
     whois/                    # WhoisXML API（F-02A 新規HP判定）
     hunter/                   # hunter.io（F-03 担当者発掘）
     musubu/                   # musubu API（F-02 企業発掘・F-03A 電話番号）
@@ -65,7 +83,9 @@ src/
 
 ---
 
-## MVP Phase 1 機能スコープ（12機能）
+## MVP Phase 1 機能スコープ
+
+### 顧客向け機能（F-01〜F-10）
 
 | ID | 機能名 | 概要 |
 |----|--------|------|
@@ -75,19 +95,44 @@ src/
 | F-02B | CSV取込 | 既存リストCSV取込、カラムマッピングUI、重複検知・クレンジング |
 | F-03 | 担当者発掘 | hunter.io APIでメールアドレス特定、取得不可時は代表メール（info@・contact@）を fallback、最大3候補をDBに保存 |
 | F-03A | 電話番号取得 | musubu等DBから電話番号取得、企業リスト画面に表示、テレアポ用CSVエクスポート |
-| F-04 | AIスコアリング（簡易版） | 業種・規模・地域でICPマッチ度を0〜100点でスコアリング |
+| F-04 | AIスコアリング（簡易版） | 業種・規模・地域でICPマッチ度を0〜100点でスコアリング（`scores`テーブルに分離） |
 | F-05 | AIメール生成 | GPT-4o-miniでパーソナライズメール生成（件名・本文）、ハルシネーション防止プロンプト必須 |
-| F-06 | SendGrid配信 | SPF/DKIM/DMARC対応、1日3,000通上限、配信ログをDBに記録 |
+| F-06 | SendGrid配信 | SPF/DKIM/DMARC対応、1日3,000通上限、`queue_emails`→`delivery_logs`で追跡 |
 | F-06A | 配信停止管理 | 配信停止リンク自動付与、停止リクエスト自動処理、特定電子メール法遵守（MVP必須） |
 | F-07 | 反応検知 | 開封検知（SendGrid Webhook）、返信検知（IMAP）、反応データをDBに保存 |
 | F-08 | ホットリード通知 | 返信時にLINE通知（企業名・連絡先・返信本文） |
 | F-09 | ダッシュボード | 今日の数値・リスト管理・配信履歴・基本フィルタ |
-| F-10 | マルチテナント | 2階層権限（弊社管理者/顧客）、PostgreSQL RLS、Supabase Auth |
+| F-10 | マルチテナント | 2階層権限（弊社管理者/顧客）＋代理店（agencies）、PostgreSQL RLS、Supabase Auth |
+
+### 管理者パネル機能 — Control Tower（FA-01〜FA-10）
+
+弊社管理者（Super Admin）専用の管理画面。`src/app/admin/` 以下に配置する。
+
+| ID | 機能名 | 概要 |
+|----|--------|------|
+| FA-01 | 管理者ダッシュボード | テナント数・配信数・MRR・開封率・バウンス率・エラー数の集計表示、各種チャート |
+| FA-02 | テナント管理（顧客一覧） | 全テナントの一覧・ステータス管理（active/suspended/inactive）・プラン表示・テナント追加/編集 |
+| FA-03 | 代理店管理 | 代理店一覧・管理テナント数・月間収益・コミッション率・ポータルアクセス管理 |
+| FA-04 | ユーザー管理 | 全テナント横断ユーザー一覧・ロール管理（テナント管理者/サポート/代理店スタッフ） |
+| FA-05 | 配信監視 | キャンペーン監視（全テナント横断・ステータス・バウンス率・スパムリスク）・メールログ・配信停止管理 |
+| FA-06 | CSV管理 | 全テナントのCSV取込状況監視・エラーCSVダウンロード・再試行 |
+| FA-07 | API・外部サービス監視 | SendGrid/OpenAI/musubu/Hunter.io/WhoisXML/Supabase/LINE のレイテンシ・エラー率・使用量監視 |
+| FA-08 | 分析 | SaaS全体KPI（テナント数推移・MRR・平均開封率）・プラン別テナント分布・トップテナントランキング |
+| FA-09 | システム設定 | SMTP設定・SendGrid設定・OpenAI設定・キュー設定・セキュリティ設定・通知設定・フィーチャーフラグ |
+| FA-10 | 監査ログ | 管理者操作の全履歴記録・重要度別フィルタ（critical/high/medium/low）・ログエクスポート |
+
+### 請求・決済機能 — Stripe連携（FB-01〜FB-02）
+
+| ID | 機能名 | 概要 |
+|----|--------|------|
+| FB-01 | Stripe課金連携 | `tenants.stripe_customer_id`・`stripe_subscription_id`・`subscription_status` を管理、Webhook受信 |
+| FB-02 | 請求書管理 | `invoices`テーブルで請求履歴を保存、管理者パネルから参照可能 |
 
 ---
 
-## MVP 画面構成（7画面）
+## MVP 画面構成
 
+### 顧客向け画面（7画面）
 1. ログイン画面
 2. ICP設定画面
 3. 企業リスト画面（電話番号も表示、新規HPフラグも表示）
@@ -96,24 +141,50 @@ src/
 6. CSV取込画面
 7. 配信停止リスト管理画面
 
+### 管理者パネル画面（12画面 — Control Tower）
+1. 管理者ダッシュボード
+2. テナント管理（顧客一覧）
+3. 代理店管理
+4. ユーザー管理
+5. キャンペーン監視
+6. メールログ
+7. 配信停止管理（グローバル）
+8. CSV取込管理
+9. API・外部サービス監視
+10. 分析
+11. システム設定（SMTP/SendGrid/OpenAI/キュー/セキュリティ/通知/フィーチャーフラグ）
+12. 監査ログ
+
 ---
 
 ## データモデル（MVP テーブル）
 
+SQLスキーマは `/home/panda/Desktop/4.sql` を正本とする。以下は概要。
+
 | テーブル名 | 内容 |
 |-----------|------|
-| `tenants` | 企業名・契約プラン・代理店ID |
-| `users` | メール・パスワード・テナントID（Supabase Auth と連携） |
-| `icp_profiles` | 業種・規模・地域・予算 |
-| `companies` | 企業名・URL・所在地・規模・業種・スコア・`is_new_hp` フラグ・テナントID |
-| `phone_numbers` | 企業ID・電話番号・取得元・有効性フラグ |
-| `contacts` | 氏名・メール・役職・企業ID |
-| `emails` | 件名・本文・配信先・状態・テナントID |
-| `unsubscribe_list` | メールアドレス・停止日時・理由・テナントID |
-| `reactions` | 開封・返信・タイムスタンプ・メールID |
-| `csv_import_history` | ファイル名・取込日時・件数・カラムマッピング情報 |
+| `tenants` | 企業名・プラン・`stripe_customer_id`・`stripe_subscription_id`・`subscription_status` |
+| `users` | メール・`password_hash`・ロール・テナントID |
+| `agencies` | 代理店名・作成日 |
+| `agency_tenants` | 代理店とテナントの紐付け（role: owner等） |
+| `icp_profiles` | 業種コード・規模レンジ・地域コード・予算・ターゲット役職・検索パラメータ |
+| `companies` | 企業名・ドメイン・業種・従業員数・所在地・法人番号・`ai_delivery_flag`・テナントID |
+| `phone_numbers` | 企業ID・電話番号・正規化番号・取得元・有効性フラグ |
+| `contacts` | 氏名・メール・役職・`confidence`・`is_verified`・`is_deliverable`・配信停止情報（`unsubscribed_at`・`unsubscribe_token`） |
+| `new_hp_flags` | 企業ID・ドメイン・WHOIS登録日・`is_new_hp`・`confidence`・判定手法 |
+| `scores` | 企業ID・`icp_match_score`・`new_hp_bonus`・`total_score`・計算日時 |
+| `icp_profiles` | 業種・規模・地域・予算・ターゲット役職・検索パラメータ |
+| `generated_emails` | 件名・本文・`generation_prompt`・使用モデル・トークン数・メタデータ |
+| `generated_email_recipients` | 生成メールID・企業ID・連絡先ID・宛先メール・ステータス |
+| `queue_emails` | 配信キュー・`scheduled_at`・`retry_count`・`last_error`・ステータス |
+| `delivery_logs` | 配信記録・`provider_message_id`・`delivered_at`・レスポンス |
+| `failed_logs` | 失敗記録・エラーコード・エラーメッセージ・`retryable`フラグ |
+| `reactions` | 開封・返信・タイムスタンプ・`in_reply_to`・メールID |
+| `csv_imports` | ファイル名・`total_rows`・`success_rows`・`failed_rows`・`duplicate_rows`・ステータス |
+| `invoices` | `stripe_invoice_id`・金額・通貨・ステータス・`billing_reason`・支払日時 |
 
 **全テーブルに RLS ポリシーを設定すること。`tenant_id` によるフィルタリングを必ず実装する。**
+**管理者専用テーブル（`agencies`・`invoices`等）はサービスロールキーでのみアクセスする。**
 
 ---
 
@@ -181,6 +252,11 @@ IMAP_PASSWORD=
 LINE_CHANNEL_ACCESS_TOKEN=
 LINE_CHANNEL_SECRET=
 
+# Stripe（FB-01 請求・決済）
+STRIPE_SECRET_KEY=
+STRIPE_PUBLISHABLE_KEY=
+STRIPE_WEBHOOK_SECRET=
+
 # 外部API
 MUSUBU_API_KEY=
 HUNTER_API_KEY=
@@ -199,6 +275,7 @@ WHOISXML_API_KEY=
 | OpenAI GPT-4o-mini | パーソナライズメール生成 | F-05 |
 | SendGrid | メール一斉配信・開封Webhook | F-06, F-07 |
 | LINE Messaging API | ホットリード返信通知 | F-08 |
+| Stripe | 課金・サブスクリプション管理・Webhook | FB-01, FB-02 |
 | Supabase | DB・Auth・RLS | 全機能 |
 
 ---
