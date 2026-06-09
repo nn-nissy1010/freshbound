@@ -159,12 +159,12 @@ src/
 
 ## データモデル（MVP テーブル）
 
-SQLスキーマは `/home/panda/Desktop/4.sql` を正本とする。以下は概要。
+SQLスキーマは `docs/schema.sql` を正本とする。以下は概要。
 
 | テーブル名 | 内容 |
 |-----------|------|
 | `tenants` | 企業名・プラン・`stripe_customer_id`・`stripe_subscription_id`・`subscription_status` |
-| `users` | メール・`password_hash`・ロール・テナントID |
+| `users` | メール・`auth_user_id`（`auth.users.id` 外部キー）・ロール・テナントID |
 | `agencies` | 代理店名・作成日 |
 | `agency_tenants` | 代理店とテナントの紐付け（role: owner等） |
 | `icp_profiles` | 業種コード・規模レンジ・地域コード・予算・ターゲット役職・検索パラメータ |
@@ -173,7 +173,6 @@ SQLスキーマは `/home/panda/Desktop/4.sql` を正本とする。以下は概
 | `contacts` | 氏名・メール・役職・`confidence`・`is_verified`・`is_deliverable`・配信停止情報（`unsubscribed_at`・`unsubscribe_token`） |
 | `new_hp_flags` | 企業ID・ドメイン・WHOIS登録日・`is_new_hp`・`confidence`・判定手法 |
 | `scores` | 企業ID・`icp_match_score`・`new_hp_bonus`・`total_score`・計算日時 |
-| `icp_profiles` | 業種・規模・地域・予算・ターゲット役職・検索パラメータ |
 | `generated_emails` | 件名・本文・`generation_prompt`・使用モデル・トークン数・メタデータ |
 | `generated_email_recipients` | 生成メールID・企業ID・連絡先ID・宛先メール・ステータス |
 | `queue_emails` | 配信キュー・`scheduled_at`・`retry_count`・`last_error`・ステータス |
