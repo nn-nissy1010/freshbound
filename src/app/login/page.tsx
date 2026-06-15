@@ -215,20 +215,6 @@ export default function LoginPage() {
                 >
                   ログイン
                 </button>
-
-                <div className="relative flex items-center gap-3">
-                  <div className="flex-1 h-px bg-gray-200" />
-                  <span className="text-xs text-gray-400">または</span>
-                  <div className="flex-1 h-px bg-gray-200" />
-                </div>
-
-                <button
-                  type="button"
-                  className="w-full py-2.5 rounded-lg border border-gray-200 text-gray-700 font-medium text-sm flex items-center justify-center gap-2 hover:bg-gray-50 transition-colors"
-                >
-                  <Shield size={16} className="text-gray-500" />
-                  SSOでログイン
-                </button>
               </form>
             </div>
 
