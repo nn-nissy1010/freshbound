@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Mail, Lock, Eye, EyeOff, Globe, Shield } from 'lucide-react';
@@ -44,18 +45,8 @@ export default function LoginPage() {
 
         {/* Logo */}
         <div className="flex items-center gap-3 relative z-10">
-          <div className="w-10 h-10 rounded-full flex items-center justify-center"
-            style={{ background: 'linear-gradient(135deg, #3b82f6, #1d4ed8)' }}>
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z" fill="white" opacity="0.3"/>
-              <path d="M12 6c-3.31 0-6 2.69-6 6s2.69 6 6 6 6-2.69 6-6-2.69-6-6-6z" fill="white" opacity="0.6"/>
-              <circle cx="12" cy="12" r="3" fill="white"/>
-            </svg>
-          </div>
-          <div>
-            <div className="font-bold text-lg leading-tight">AIアウトバウンド</div>
-            <div className="text-blue-300 text-sm leading-tight">自動化</div>
-          </div>
+          <Image src="/logo.png" alt="Freshbound" width={40} height={40} className="rounded-xl" />
+          <div className="font-bold text-lg leading-tight">Freshbound</div>
         </div>
 
         {/* Main copy */}
@@ -111,7 +102,7 @@ export default function LoginPage() {
         </div>
 
         <div className="relative z-10 text-blue-400 text-xs">
-          © 2025 AIアウトバウンド自動化
+          © 2026 Freshbound
         </div>
       </div>
 
@@ -134,18 +125,8 @@ export default function LoginPage() {
             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
               {/* Logo (mobile) */}
               <div className="flex flex-col items-center mb-6">
-                <div className="w-12 h-12 rounded-full flex items-center justify-center mb-3"
-                  style={{ background: 'linear-gradient(135deg, #3b82f6, #1d4ed8)' }}>
-                  <svg width="26" height="26" viewBox="0 0 24 24" fill="none">
-                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z" fill="white" opacity="0.3"/>
-                    <path d="M12 6c-3.31 0-6 2.69-6 6s2.69 6 6 6 6-2.69 6-6-2.69-6-6-6z" fill="white" opacity="0.6"/>
-                    <circle cx="12" cy="12" r="3" fill="white"/>
-                  </svg>
-                </div>
-                <div className="text-center">
-                  <div className="font-bold text-gray-800">AIアウトバウンド</div>
-                  <div className="text-blue-500 text-sm">自動化</div>
-                </div>
+                <Image src="/logo.png" alt="Freshbound" width={48} height={48} className="rounded-xl mb-3" />
+                <div className="font-bold text-gray-800">Freshbound</div>
               </div>
 
               <h2 className="text-xl font-bold text-center text-gray-800 mb-1">ログイン</h2>
@@ -227,7 +208,7 @@ export default function LoginPage() {
                 <Link href="#" className="hover:text-gray-600">ヘルプ</Link>
               </div>
               <p className="text-xs text-gray-400">
-                © 2025 AIアウトバウンド自動化 All rights reserved.
+                © 2026 Freshbound All rights reserved.
               </p>
             </div>
           </div>
