@@ -3,7 +3,8 @@
 import { useState, useRef } from 'react';
 import {
   HelpCircle, Download, Plus, Upload, Shield,
-  CheckCircle, ChevronRight, MoreVertical
+  CheckCircle, ChevronRight, MoreVertical,
+  FileText, BarChart2, AlertTriangle, UserPlus,
 } from 'lucide-react';
 
 const importHistory = [
@@ -197,29 +198,34 @@ export default function CSVImportPage() {
           <div className="bg-white rounded-xl border border-gray-100 p-5 shadow-sm">
             <h2 className="text-sm font-bold text-gray-800 mb-4">取込サマリー</h2>
             <div className="space-y-3">
-              {[
-                { icon: '📄', label: 'ファイル名', value: 'existing_list_20250510.csv', valueClass: 'text-gray-700 text-xs' },
-                { icon: '📊', label: '取込予定件数', value: '2,450件', valueClass: 'text-gray-800 font-semibold text-sm' },
-                { icon: '✅', label: '必須項目の入力率', value: null, progress: 98.6 },
-                { icon: '⚠️', label: '重複件数（スキップ予定）', value: '135件', valueClass: 'text-orange-500 font-medium text-sm' },
-                { icon: '🆕', label: '新規登録予定件数', value: '2,315件', valueClass: 'text-blue-600 font-bold text-sm' },
-              ].map((item) => (
-                <div key={item.label}>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm">{item.icon}</span>
-                      <span className="text-xs text-gray-500">{item.label}</span>
+              {([
+                { icon: FileText,       iconBg: 'bg-gray-100',   iconColor: 'text-gray-500',  label: 'ファイル名',             value: 'existing_list_20250510.csv', valueClass: 'text-gray-700 text-xs' },
+                { icon: BarChart2,      iconBg: 'bg-blue-50',    iconColor: 'text-blue-500',  label: '取込予定件数',           value: '2,450件',                    valueClass: 'text-gray-800 font-semibold text-sm' },
+                { icon: CheckCircle,    iconBg: 'bg-green-50',   iconColor: 'text-green-500', label: '必須項目の入力率',        value: null,                         progress: 98.6 },
+                { icon: AlertTriangle,  iconBg: 'bg-amber-50',   iconColor: 'text-amber-500', label: '重複件数（スキップ予定）', value: '135件',                      valueClass: 'text-orange-500 font-medium text-sm' },
+                { icon: UserPlus,       iconBg: 'bg-blue-50',    iconColor: 'text-blue-500',  label: '新規登録予定件数',        value: '2,315件',                    valueClass: 'text-blue-600 font-bold text-sm' },
+              ] as const).map((item) => {
+                const Icon = item.icon;
+                return (
+                  <div key={item.label}>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <div className={`w-5 h-5 rounded-md flex items-center justify-center flex-shrink-0 ${item.iconBg}`}>
+                          <Icon size={12} className={item.iconColor} />
+                        </div>
+                        <span className="text-xs text-gray-500">{item.label}</span>
+                      </div>
+                      {'value' in item && item.value && <span className={item.valueClass}>{item.value}</span>}
+                      {'progress' in item && item.progress && <span className="text-sm font-semibold text-gray-700">{item.progress}%</span>}
                     </div>
-                    {item.value && <span className={item.valueClass}>{item.value}</span>}
-                    {item.progress && <span className="text-sm font-semibold text-gray-700">{item.progress}%</span>}
+                    {'progress' in item && item.progress && (
+                      <div className="mt-1 ml-7 bg-gray-100 rounded-full h-1.5">
+                        <div className="h-1.5 rounded-full bg-green-500" style={{ width: `${item.progress}%` }} />
+                      </div>
+                    )}
                   </div>
-                  {item.progress && (
-                    <div className="mt-1 ml-6 bg-gray-100 rounded-full h-1.5">
-                      <div className="h-1.5 rounded-full bg-green-500" style={{ width: `${item.progress}%` }} />
-                    </div>
-                  )}
-                </div>
-              ))}
+                );
+              })}
             </div>
 
             {/* Security Notice */}

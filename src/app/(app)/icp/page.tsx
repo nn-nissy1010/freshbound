@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { HelpCircle, X, Plus, Save } from 'lucide-react';
+import { HelpCircle, X, Plus, Save, Building2, Users, MapPin, Banknote, Briefcase, Tag, Ban } from 'lucide-react';
 
 const industries = [
   'IT・情報通信', '人材サービス', 'コンサルティング', '製造業', '小売・流通',
@@ -255,22 +255,27 @@ export default function ICPPage() {
 
             <div className="space-y-3">
               {[
-                { icon: '🏢', label: '業種', value: 'IT・情報通信、人材サービス、コンサルティング' },
-                { icon: '👥', label: '従業員数', value: '100名以上 〜 200名以下' },
-                { icon: '📍', label: '所在地', value: '関東地方、関西地方' },
-                { icon: '💰', label: '年間売上', value: '10億円以上 〜 50億円以下' },
-                { icon: '💼', label: '予算規模', value: '1,000万円以上' },
-                { icon: '🔑', label: '課題・キーワード', value: '未設定' },
-                { icon: '🚫', label: '除外条件', value: '未設定' },
-              ].map((item) => (
-                <div key={item.label} className="flex items-start gap-2">
-                  <span className="text-sm mt-0.5">{item.icon}</span>
-                  <div>
-                    <div className="text-xs text-gray-500">{item.label}</div>
-                    <div className="text-xs font-medium text-gray-700 mt-0.5">{item.value}</div>
+                { icon: Building2,  label: '業種',           value: 'IT・情報通信、人材サービス、コンサルティング' },
+                { icon: Users,      label: '従業員数',        value: '100名以上 〜 200名以下' },
+                { icon: MapPin,     label: '所在地',          value: '関東地方、関西地方' },
+                { icon: Banknote,   label: '年間売上',        value: '10億円以上 〜 50億円以下' },
+                { icon: Briefcase,  label: '予算規模',        value: '1,000万円以上' },
+                { icon: Tag,        label: '課題・キーワード', value: '未設定' },
+                { icon: Ban,        label: '除外条件',        value: '未設定' },
+              ].map((item) => {
+                const Icon = item.icon;
+                return (
+                  <div key={item.label} className="flex items-start gap-2">
+                    <div className="w-5 h-5 rounded-md bg-blue-50 flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <Icon size={12} className="text-blue-500" />
+                    </div>
+                    <div>
+                      <div className="text-xs text-gray-500">{item.label}</div>
+                      <div className="text-xs font-medium text-gray-700 mt-0.5">{item.value}</div>
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         </div>
