@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import {
   User, Bell, Mail, Shield, CreditCard, Building2,
-  ChevronRight, Save, Eye, EyeOff, Check, AlertCircle, Globe, Copy
+  ChevronRight, Save, Eye, EyeOff, Check, Globe, Copy
 } from 'lucide-react';
 
 const sidebarItems = [
@@ -20,7 +20,6 @@ export default function SettingsPage() {
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [saved, setSaved] = useState(false);
-  const [domainType, setDomainType] = useState<'shared' | 'custom'>('shared');
   const [customDomain, setCustomDomain] = useState('');
   const [domainVerifyStatus, setDomainVerifyStatus] = useState<'idle' | 'checking' | 'verified' | 'failed'>('idle');
 
@@ -215,37 +214,8 @@ export default function SettingsPage() {
               </div>
               <div className="mt-5 pt-4 border-t border-gray-100">
                 <h3 className="text-sm font-semibold text-gray-700 mb-1">送信ドメイン設定</h3>
-                <p className="text-xs text-gray-400 mb-3">共有ドメイン（標準）または自社ドメインを認証して送信できます。</p>
-                <div className="flex gap-3 mb-4">
-                  {[
-                    { id: 'shared', label: '共有ドメイン（推奨）', desc: 'mail.freshbound.jp 経由で即時利用可能（MVP標準）' },
-                    { id: 'custom', label: 'カスタムドメイン', desc: '自社ドメインで送信（DNS設定が必要）' },
-                  ].map((opt) => (
-                    <button
-                      key={opt.id}
-                      onClick={() => { setDomainType(opt.id as 'shared' | 'custom'); setDomainVerifyStatus('idle'); }}
-                      className={`flex-1 text-left p-3 rounded-xl border-2 transition-colors ${
-                        domainType === opt.id ? 'border-blue-500 bg-blue-50' : 'border-gray-200 bg-white hover:bg-gray-50'
-                      }`}
-                    >
-                      <div className={`text-sm font-medium ${domainType === opt.id ? 'text-blue-700' : 'text-gray-700'}`}>{opt.label}</div>
-                      <div className="text-xs text-gray-400 mt-0.5">{opt.desc}</div>
-                    </button>
-                  ))}
-                </div>
-
-                {domainType === 'shared' && (
-                  <div className="flex items-center gap-3 p-3 bg-green-50 border border-green-200 rounded-lg">
-                    <Check size={16} className="text-green-600 flex-shrink-0" />
-                    <div>
-                      <p className="text-sm font-medium text-green-700">共有ドメイン設定済み</p>
-                      <p className="text-xs text-green-600">mail.freshbound.jp 経由で送信されます（SendGrid管理・SPF/DKIM設定済み）</p>
-                    </div>
-                  </div>
-                )}
-
-                {domainType === 'custom' && (
-                  <div className="space-y-4">
+                <p className="text-xs text-gray-400 mb-3">自社ドメインを認証して送信できます（DNS設定が必要）。</p>
+                <div className="space-y-4">
                     <div>
                       <label className="block text-xs font-medium text-gray-600 mb-1.5">認証するドメイン</label>
                       <div className="relative">
@@ -312,8 +282,7 @@ export default function SettingsPage() {
                         </div>
                       </div>
                     )}
-                  </div>
-                )}
+                </div>
               </div>
               <div className="flex justify-end mt-4">
                 <button onClick={handleSave}
@@ -362,21 +331,6 @@ export default function SettingsPage() {
                   <button className="text-sm rounded-lg px-4 py-2 text-white font-medium"
                     style={{ background: 'linear-gradient(135deg, #3b82f6, #2563eb)' }}>
                     パスワードを変更
-                  </button>
-                </div>
-              </div>
-              <div className="bg-white rounded-xl border border-gray-100 p-5 shadow-sm">
-                <h2 className="text-sm font-bold text-gray-800 mb-4">二要素認証（2FA）</h2>
-                <div className="flex items-center justify-between p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
-                  <div className="flex items-center gap-2">
-                    <AlertCircle size={15} className="text-yellow-600" />
-                    <div>
-                      <p className="text-sm font-medium text-yellow-700">2FAが無効です</p>
-                      <p className="text-xs text-yellow-600">セキュリティ強化のため有効化を推奨します</p>
-                    </div>
-                  </div>
-                  <button className="text-xs border border-yellow-300 text-yellow-700 rounded-lg px-3 py-1.5 hover:bg-yellow-100 font-medium">
-                    有効にする
                   </button>
                 </div>
               </div>
