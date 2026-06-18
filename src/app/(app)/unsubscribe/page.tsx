@@ -5,8 +5,6 @@ import {
   Search, Download, Plus, HelpCircle, Calendar,
   ChevronLeft, ChevronRight, MoreVertical
 } from 'lucide-react';
-import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
-
 const unsubscribeData = [
   {
     id: 1, email: 't.tanaka@sample-tech.co.jp', company: '株式会社サンプルテック',
@@ -48,22 +46,6 @@ const unsubscribeData = [
     contact: '小林 直樹', date: '2025/05/02 08:41', reason: '配信頻度が多い',
     method: '自動（リンク）', status: '有効',
   },
-];
-
-const pieData = [
-  { name: '興味なし', value: 651, color: '#3b82f6' },
-  { name: '配信頻度が多い', value: 524, color: '#10b981' },
-  { name: '不要・迷惑メール', value: 487, color: '#f59e0b' },
-  { name: '配信停止リンク', value: 643, color: '#8b5cf6' },
-  { name: 'その他', value: 10, color: '#6b7280' },
-];
-
-const recentStops = [
-  { date: '2025/05/10 10:23', email: 't.tanaka@sample-tech.co.jp', reason: 'リンク', color: '#8b5cf6' },
-  { date: '2025/05/09 09:15', email: 'suzuki@alpha-co.jp', reason: '興味なし', color: '#3b82f6' },
-  { date: '2025/05/09 17:32', email: 'info@beta-inc.co.jp', reason: '不要・迷惑', color: '#f59e0b' },
-  { date: '2025/05/09 14:08', email: 'yamada@future-link.co.jp', reason: 'リンク', color: '#8b5cf6' },
-  { date: '2025/05/09 11:02', email: 'contact@gamma.co.jp', reason: '配信頻度多い', color: '#10b981' },
 ];
 
 const reasonColors: Record<string, { bg: string; text: string }> = {
@@ -125,9 +107,7 @@ export default function UnsubscribePage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-4 gap-5">
-        {/* Main Content */}
-        <div className="col-span-3">
+      <div>
           {/* Filters */}
           <div className="bg-white rounded-xl border border-gray-100 p-4 mb-4 shadow-sm">
             <div className="flex items-center gap-3 flex-wrap">
@@ -260,99 +240,6 @@ export default function UnsubscribePage() {
             </table>
           </div>
 
-          <div className="mt-3 flex items-start gap-2.5 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#2563eb" strokeWidth="2" className="flex-shrink-0 mt-0.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-            <div>
-              <p className="text-xs font-semibold text-blue-700">スコープ：テナント（契約企業）ごとに完全分離</p>
-              <p className="text-xs text-blue-600 mt-0.5">
-                このリストは貴社テナント専用です。他のテナントのデータとは共有されません。
-                バックエンドでは Supabase の Row-Level Security（RLS）により、テナントIDに基づいたアクセス制御を実施しています。
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {/* Right Panel */}
-        <div className="space-y-4">
-          {/* Summary */}
-          <div className="bg-white rounded-xl border border-gray-100 p-4 shadow-sm">
-            <h2 className="text-sm font-bold text-gray-800 mb-4">配信停止サマリー</h2>
-            <div className="grid grid-cols-2 gap-3 mb-4">
-              {[
-                { icon: '🚫', label: '総配信停止数', value: '2,315件', color: '#3b82f6' },
-                { icon: '✉️', label: '今月の配信停止', value: '187件', sub: '▼ -12%', subColor: '#10b981' },
-                { icon: '📊', label: '配信停止率', value: '1.87%', sub: '▼ -0.35pt', subColor: '#10b981' },
-                { icon: '🔗', label: 'リンク経由率', value: '85.6%', color: '#8b5cf6' },
-              ].map((item) => (
-                <div key={item.label} className="bg-gray-50 rounded-lg p-3">
-                  <div className="text-xs text-gray-500 mb-1">{item.label}</div>
-                  <div className="text-sm font-bold text-gray-800">{item.value}</div>
-                  {item.sub && (
-                    <div className="text-xs mt-0.5" style={{ color: item.subColor }}>{item.sub}</div>
-                  )}
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Pie Chart */}
-          <div className="bg-white rounded-xl border border-gray-100 p-4 shadow-sm">
-            <h2 className="text-sm font-bold text-gray-800 mb-3">配信停止理由（内訳）</h2>
-            <div className="flex justify-center mb-3">
-              <div className="relative">
-                <ResponsiveContainer width={140} height={140}>
-                  <PieChart>
-                    <Pie data={pieData} cx="50%" cy="50%" innerRadius={40} outerRadius={65} dataKey="value" strokeWidth={0}>
-                      {pieData.map((entry, index) => (
-                        <Cell key={index} fill={entry.color} />
-                      ))}
-                    </Pie>
-                  </PieChart>
-                </ResponsiveContainer>
-                <div className="absolute inset-0 flex flex-col items-center justify-center">
-                  <div className="text-xs text-gray-500">合計</div>
-                  <div className="text-sm font-bold text-gray-800">2,315件</div>
-                </div>
-              </div>
-            </div>
-            <div className="space-y-1.5">
-              {pieData.map((item) => (
-                <div key={item.name} className="flex items-center justify-between">
-                  <div className="flex items-center gap-1.5">
-                    <div className="w-2 h-2 rounded-full" style={{ backgroundColor: item.color }} />
-                    <span className="text-xs text-gray-600">{item.name}</span>
-                  </div>
-                  <div className="text-right">
-                    <span className="text-xs font-medium text-gray-700">{item.value.toLocaleString()}件</span>
-                    <span className="text-xs text-gray-400 ml-1">({((item.value / 2315) * 100).toFixed(1)}%)</span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Recent Stops */}
-          <div className="bg-white rounded-xl border border-gray-100 p-4 shadow-sm">
-            <div className="flex items-center justify-between mb-3">
-              <h2 className="text-sm font-bold text-gray-800">最近の配信停止</h2>
-              <button className="text-xs text-blue-600 hover:text-blue-700">すべて見る</button>
-            </div>
-            <div className="space-y-2.5">
-              {recentStops.map((item, i) => (
-                <div key={i} className="flex items-start justify-between gap-2">
-                  <div className="flex-1 min-w-0">
-                    <div className="text-xs text-gray-400">{item.date}</div>
-                    <div className="text-xs text-gray-700 truncate">{item.email}</div>
-                  </div>
-                  <span className="text-xs px-2 py-0.5 rounded-full font-medium flex-shrink-0"
-                    style={{ backgroundColor: item.color + '20', color: item.color }}>
-                    {item.reason}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
       </div>
     </div>
   );
