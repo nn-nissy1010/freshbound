@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import {
   Search, Download, Plus, Filter, HelpCircle,
   Mail, ChevronLeft, ChevronRight, MoreVertical,
@@ -186,6 +187,12 @@ export default function CompaniesPage() {
           <span className="text-xs bg-blue-50 text-blue-600 border border-blue-200 rounded-full px-2.5 py-0.5 font-medium">
             IT企業_成長フェーズ
           </span>
+          <Link
+            href="/icp"
+            className="text-xs border border-gray-200 rounded-lg px-2.5 py-0.5 text-gray-600 hover:bg-gray-50 hover:text-blue-600"
+          >
+            変更する
+          </Link>
         </div>
         <div className="flex items-center gap-2 text-xs text-gray-500">
           <span>該当件数：<strong className="text-gray-700">1,248社</strong></span>
