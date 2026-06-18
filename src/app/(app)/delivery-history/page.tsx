@@ -6,10 +6,6 @@ import {
   Filter, ChevronLeft, ChevronRight, Trash2, Eye,
   X, Check, Send, Users, AlertCircle
 } from 'lucide-react';
-import {
-  BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid,
-  Tooltip, ResponsiveContainer, PieChart, Pie, Cell
-} from 'recharts';
 
 // B-1: シナリオ配信（F-10 ステップメール）はPhase 2。MVP時点は一斉配信のみ
 const deliveries = [
@@ -57,22 +53,43 @@ const deliveries = [
   },
 ];
 
-const barData = [
-  { date: '04/11', 配信: 980 }, { date: '04/18', 配信: 1120 }, { date: '04/25', 配信: 1310 },
-  { date: '05/02', 配信: 1389 }, { date: '05/09', 配信: 1245 },
-];
 
-const lineData = [
-  { date: '04/11', 開封率: 18.2, 返信率: 1.5 }, { date: '04/18', 開封率: 19.5, 返信率: 1.7 },
-  { date: '04/25', 開封率: 20.1, 返信率: 1.8 }, { date: '05/02', 開封率: 20.0, 返信率: 2.0 },
-  { date: '05/09', 開封率: 22.3, 返信率: 2.3 },
-];
+type DraftEmail = {
+  id: number; company: string; contact: string; contactTitle: string;
+  subject: string; body: string; generatedAt: string; score: number;
+};
 
-const statusPieData = [
-  { name: '配信完了', value: 11542, color: '#3b82f6' },
-  { name: '配信中', value: 628, color: '#60a5fa' },
-  { name: '配信予約', value: 142, color: '#93c5fd' },
-  { name: 'エラー', value: 138, color: '#ef4444' },
+const draftEmails: DraftEmail[] = [
+  {
+    id: 1, company: '株式会社サンプルテック', contact: '田中 太郎', contactTitle: '営業マネージャー',
+    subject: '【株式会社サンプルテック様へ】IT向け営業支援サービスのご案内',
+    body: `田中 太郎 様\n\nはじめてご連絡いたします。山田と申します。\n\n株式会社サンプルテック様のIT事業への取り組みを拝見し、弊社サービスがお役に立てると考えご連絡いたしました。\n\n15分ほどお時間をいただけますでしょうか。\n\n何卒よろしくお願いいたします。`,
+    generatedAt: '2025/05/10 09:15', score: 87,
+  },
+  {
+    id: 2, company: '株式会社イノベーションズ', contact: '佐藤 花子', contactTitle: '営業部長',
+    subject: '【株式会社イノベーションズ様へ】新規開拓の効率化についてご提案',
+    body: `佐藤 花子 様\n\nはじめてご連絡いたします。山田と申します。\n\n株式会社イノベーションズ様のSaaS事業における営業活動を支援できると考えご連絡いたしました。\n\nお時間をいただけましたら幸いです。`,
+    generatedAt: '2025/05/10 09:18', score: 76,
+  },
+  {
+    id: 3, company: '株式会社グロースパートナー', contact: '鈴木 一郎', contactTitle: '代表取締役',
+    subject: '【株式会社グロースパートナー様へ】コンサル会社向け営業自動化のご提案',
+    body: `鈴木 一郎 様\n\nはじめてご連絡いたします。山田と申します。\n\n株式会社グロースパートナー様の新規開拓を効率化できるサービスをご提供しております。\n\nぜひ一度お話しする機会をいただければ幸いです。`,
+    generatedAt: '2025/05/10 09:20', score: 72,
+  },
+  {
+    id: 4, company: '株式会社デジタルソリューション', contact: '高橋 健', contactTitle: '営業マネージャー',
+    subject: '【株式会社デジタルソリューション様へ】AI営業支援ツールのご紹介',
+    body: `高橋 健 様\n\nはじめてご連絡いたします。山田と申します。\n\nIT・ソフトウェア業界でご活躍の株式会社デジタルソリューション様に、弊社のAI営業支援ツールをご紹介したくご連絡いたしました。\n\nご検討のほどよろしくお願いいたします。`,
+    generatedAt: '2025/05/10 09:22', score: 68,
+  },
+  {
+    id: 5, company: '株式会社フューチャーリンク', contact: '山本 美咲', contactTitle: 'セールス',
+    subject: '【株式会社フューチャーリンク様へ】SaaS企業向け新規開拓支援のご提案',
+    body: `山本 美咲 様\n\nはじめてご連絡いたします。山田と申します。\n\n株式会社フューチャーリンク様のSaaSビジネスの成長を加速させるお手伝いができると考えご連絡いたしました。\n\n30分程度のオンライン相談も可能です。お気軽にご返信ください。`,
+    generatedAt: '2025/05/10 09:25', score: 65,
+  },
 ];
 
 function StatusBadge({ status }: { status: string }) {
@@ -103,6 +120,10 @@ export default function DeliveryHistoryPage() {
   const [showNewModal, setShowNewModal] = useState(false);
   const [modalStep, setModalStep] = useState(1);
   const [sendMode, setSendMode] = useState<'review' | 'auto'>('review');
+  const [activeTab, setActiveTab] = useState<'sent' | 'draft'>('sent');
+  const [draftPreview, setDraftPreview] = useState<DraftEmail | null>(null);
+  const [approvedDrafts, setApprovedDrafts] = useState<number[]>([]);
+  const [rejectedDrafts, setRejectedDrafts] = useState<number[]>([]);
 
   const toggleSelect = (id: number) => {
     setSelected(prev => prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]);
@@ -138,6 +159,30 @@ export default function DeliveryHistoryPage() {
         </div>
       </div>
 
+      {/* Tabs */}
+      <div className="flex gap-1 bg-white border border-gray-100 rounded-xl p-1 shadow-sm mb-4 w-fit">
+        {([
+          { id: 'sent' as const, label: '配信済み', count: 0 },
+          { id: 'draft' as const, label: '下書き（レビュー待ち）', count: draftEmails.filter(d => !approvedDrafts.includes(d.id) && !rejectedDrafts.includes(d.id)).length },
+        ]).map((tab) => (
+          <button
+            key={tab.id}
+            onClick={() => setActiveTab(tab.id)}
+            className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+              activeTab === tab.id ? 'bg-blue-600 text-white' : 'text-gray-600 hover:bg-gray-100'
+            }`}
+          >
+            {tab.label}
+            {tab.count > 0 && (
+              <span className={`text-xs px-1.5 py-0.5 rounded-full ${activeTab === tab.id ? 'bg-blue-500' : 'bg-red-100 text-red-600'}`}>
+                {tab.count}
+              </span>
+            )}
+          </button>
+        ))}
+      </div>
+
+      {activeTab === 'sent' && (<>
       {/* Filters */}
       <div className="bg-white rounded-xl border border-gray-100 p-4 mb-4 shadow-sm">
         <div className="flex items-center gap-3 flex-wrap">
@@ -291,6 +336,137 @@ export default function DeliveryHistoryPage() {
       </div>
 
       <p className="text-xs text-gray-400 mt-3">※ 指標の定義についてはヘルプをご参照ください。</p>
+      </>)}
+
+      {activeTab === 'draft' && (<>
+        {/* Draft stats */}
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-4 text-sm text-gray-600">
+            <span>レビュー待ち：<strong className="text-gray-800">{draftEmails.filter(d => !approvedDrafts.includes(d.id) && !rejectedDrafts.includes(d.id)).length}件</strong></span>
+            <span className="text-gray-400">承認済み：{approvedDrafts.length}件</span>
+            <span className="text-gray-400">却下：{rejectedDrafts.length}件</span>
+          </div>
+          <button
+            onClick={() => setApprovedDrafts(draftEmails.map(d => d.id))}
+            className="flex items-center gap-2 text-sm rounded-lg px-3 py-2 text-white font-medium"
+            style={{ background: 'linear-gradient(135deg, #3b82f6, #2563eb)' }}
+          >
+            <Send size={14} />
+            レビュー待ち全件を承認して送信
+          </button>
+        </div>
+
+        {/* Draft table */}
+        <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
+          <table className="w-full">
+            <thead>
+              <tr className="border-b border-gray-100 bg-gray-50">
+                <th className="text-left text-xs font-medium text-gray-500 px-4 py-3">企業名 / 担当者</th>
+                <th className="text-left text-xs font-medium text-gray-500 px-3 py-3">件名</th>
+                <th className="text-left text-xs font-medium text-gray-500 px-3 py-3">スコア</th>
+                <th className="text-left text-xs font-medium text-gray-500 px-3 py-3">生成日時</th>
+                <th className="text-left text-xs font-medium text-gray-500 px-3 py-3">ステータス</th>
+                <th className="text-left text-xs font-medium text-gray-500 px-3 py-3">操作</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-50">
+              {draftEmails.map((draft) => {
+                const isApproved = approvedDrafts.includes(draft.id);
+                const isRejected = rejectedDrafts.includes(draft.id);
+                return (
+                  <tr key={draft.id} className={`hover:bg-gray-50 transition-colors ${isApproved || isRejected ? 'opacity-50' : ''}`}>
+                    <td className="px-4 py-3">
+                      <div className="text-sm font-medium text-gray-800">{draft.company}</div>
+                      <div className="text-xs text-gray-400">{draft.contact}　{draft.contactTitle}</div>
+                    </td>
+                    <td className="px-3 py-3 text-sm text-gray-700 max-w-xs truncate">{draft.subject}</td>
+                    <td className="px-3 py-3">
+                      <span className={`text-sm font-bold ${draft.score >= 80 ? 'text-green-600' : draft.score >= 60 ? 'text-blue-600' : 'text-amber-600'}`}>
+                        {draft.score}
+                      </span>
+                    </td>
+                    <td className="px-3 py-3 text-xs text-gray-400 whitespace-nowrap">{draft.generatedAt}</td>
+                    <td className="px-3 py-3">
+                      {isApproved
+                        ? <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-medium">承認済み</span>
+                        : isRejected
+                        ? <span className="text-xs bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">却下</span>
+                        : <span className="text-xs bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full font-medium">レビュー待ち</span>
+                      }
+                    </td>
+                    <td className="px-3 py-3">
+                      <div className="flex items-center gap-1">
+                        <button onClick={() => setDraftPreview(draft)}
+                          className="flex items-center gap-1 text-xs border border-gray-200 rounded px-2 py-1 hover:bg-gray-50 text-gray-600">
+                          <Eye size={11} />確認・編集
+                        </button>
+                        {!isApproved && !isRejected && (<>
+                          <button onClick={() => setApprovedDrafts(prev => [...prev, draft.id])}
+                            className="flex items-center gap-1 text-xs border border-green-200 rounded px-2 py-1 hover:bg-green-50 text-green-600">
+                            <Check size={11} />承認
+                          </button>
+                          <button onClick={() => setRejectedDrafts(prev => [...prev, draft.id])}
+                            className="flex items-center gap-1 text-xs border border-red-200 rounded px-2 py-1 hover:bg-red-50 text-red-500">
+                            <X size={11} />却下
+                          </button>
+                        </>)}
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      </>)}
+
+      {/* Draft Preview Modal */}
+      {draftPreview && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+              <div>
+                <h2 className="text-base font-bold text-gray-800">メールプレビュー・編集</h2>
+                <p className="text-xs text-gray-400 mt-0.5">{draftPreview.company} / {draftPreview.contact}</p>
+              </div>
+              <button onClick={() => setDraftPreview(null)} className="p-2 hover:bg-gray-100 rounded-lg text-gray-400">
+                <X size={18} />
+              </button>
+            </div>
+            <div className="px-6 py-5 space-y-4">
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-1.5">件名</label>
+                <input type="text" defaultValue={draftPreview.subject}
+                  className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-1.5">本文</label>
+                <textarea rows={12} defaultValue={draftPreview.body}
+                  className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono leading-relaxed" />
+              </div>
+            </div>
+            <div className="flex items-center justify-between px-6 py-4 border-t border-gray-100">
+              <button onClick={() => setDraftPreview(null)}
+                className="text-sm border border-gray-200 rounded-lg px-4 py-2 text-gray-600 hover:bg-gray-50">
+                閉じる
+              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => { setRejectedDrafts(prev => [...prev, draftPreview.id]); setDraftPreview(null); }}
+                  className="text-sm border border-red-200 rounded-lg px-4 py-2 text-red-500 hover:bg-red-50">
+                  却下
+                </button>
+                <button
+                  onClick={() => { setApprovedDrafts(prev => [...prev, draftPreview.id]); setDraftPreview(null); }}
+                  className="flex items-center gap-2 text-sm rounded-lg px-4 py-2 text-white font-medium"
+                  style={{ background: 'linear-gradient(135deg, #3b82f6, #2563eb)' }}>
+                  <Send size={14} />承認して送信
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* New Delivery Modal */}
       {showNewModal && (
