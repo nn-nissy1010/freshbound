@@ -1,12 +1,17 @@
 'use client';
 
 import { useState } from 'react';
-import Link from 'next/link';
 import {
   Search, Download, Plus, Filter, HelpCircle,
   Mail, ChevronLeft, ChevronRight, MoreVertical,
-  RefreshCw, Building2, ExternalLink
+  RefreshCw, Building2, ExternalLink, Target, X, Check,
 } from 'lucide-react';
+
+const icpProfiles = [
+  { id: 1, name: 'IT企業_成長フェーズ', industry: 'IT・ソフトウェア', size: '51-200名', region: '東京・大阪', updatedAt: '2025/05/01' },
+  { id: 2, name: 'SaaS_スタートアップ', industry: 'SaaS', size: '1-50名', region: '全国', updatedAt: '2025/04/20' },
+  { id: 3, name: '製造業_中堅企業', industry: '製造業', size: '201-500名', region: '愛知・大阪', updatedAt: '2025/04/10' },
+];
 
 // C-1: メールアドレス単位の送信可否（コンタクト単位制御）
 type Company = {
@@ -97,6 +102,9 @@ function ScoreBadge({ score }: { score: number }) {
 export default function CompaniesPage() {
   const [selected, setSelected] = useState<number[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
+  const [showIcpModal, setShowIcpModal] = useState(false);
+  const [selectedIcp, setSelectedIcp] = useState(icpProfiles[0]);
+  const [pendingIcp, setPendingIcp] = useState(icpProfiles[0]);
   // C-1: メール単位の送信可否をローカル状態で管理
   const [emailEnabled, setEmailEnabled] = useState<Record<string, boolean>>(
     Object.fromEntries(
@@ -149,8 +157,8 @@ export default function CompaniesPage() {
       {/* Filters */}
       <div className="bg-white rounded-xl border border-gray-100 p-4 mb-4 shadow-sm">
         <h3 className="text-sm font-semibold text-gray-700 mb-3">検索・絞り込み</h3>
-        <div className="flex items-center gap-3">
-          <div className="relative flex-1 max-w-xs">
+        <div className="flex items-center gap-3 flex-wrap">
+          <div className="relative flex-1 min-w-48 max-w-xs">
             <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
             <input
               type="text"
@@ -160,6 +168,13 @@ export default function CompaniesPage() {
               className="w-full pl-8 pr-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
+          <button
+            onClick={() => { setPendingIcp(selectedIcp); setShowIcpModal(true); }}
+            className="flex items-center gap-2 text-sm border border-blue-200 bg-blue-50 text-blue-700 rounded-lg px-3 py-2 hover:bg-blue-100 font-medium whitespace-nowrap"
+          >
+            <Target size={14} />
+            ICP：{selectedIcp.name}
+          </button>
           {[
             { label: '業種', options: ['すべて', 'IT・ソフトウェア', 'コンサルティング', 'SaaS'] },
             { label: '企業規模', options: ['すべて', '1-50名', '51-100名', '101-200名', '201-300名'] },
@@ -180,25 +195,63 @@ export default function CompaniesPage() {
         </div>
       </div>
 
-      {/* ICP Tag + Count */}
+      {/* Count row */}
       <div className="flex items-center justify-between mb-3">
-        <div className="flex items-center gap-2">
-          <span className="text-xs text-gray-500">選択中のICP：</span>
-          <span className="text-xs bg-blue-50 text-blue-600 border border-blue-200 rounded-full px-2.5 py-0.5 font-medium">
-            IT企業_成長フェーズ
-          </span>
-          <Link
-            href="/icp"
-            className="text-xs border border-gray-200 rounded-lg px-2.5 py-0.5 text-gray-600 hover:bg-gray-50 hover:text-blue-600"
-          >
-            変更する
-          </Link>
-        </div>
-        <div className="flex items-center gap-2 text-xs text-gray-500">
-          <span>該当件数：<strong className="text-gray-700">1,248社</strong></span>
-          <button className="text-blue-600 hover:text-blue-700">条件をクリア</button>
-        </div>
+        <span className="text-xs text-gray-500">該当件数：<strong className="text-gray-700">1,248社</strong></span>
+        <button className="text-xs text-blue-600 hover:text-blue-700">条件をクリア</button>
       </div>
+
+      {/* ICP Select Modal */}
+      {showIcpModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div className="absolute inset-0 bg-black/40" onClick={() => setShowIcpModal(false)} />
+          <div className="relative bg-white rounded-2xl shadow-xl w-full max-w-md mx-4 p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-sm font-bold text-gray-800">ICPを選択</h2>
+              <button onClick={() => setShowIcpModal(false)} className="p-1 hover:bg-gray-100 rounded text-gray-400">
+                <X size={16} />
+              </button>
+            </div>
+            <div className="space-y-2 mb-5">
+              {icpProfiles.map((icp) => (
+                <button
+                  key={icp.id}
+                  onClick={() => setPendingIcp(icp)}
+                  className={`w-full text-left p-3 rounded-xl border-2 transition-colors ${
+                    pendingIcp.id === icp.id
+                      ? 'border-blue-500 bg-blue-50'
+                      : 'border-gray-100 hover:border-gray-200 hover:bg-gray-50'
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium text-gray-800">{icp.name}</span>
+                    {pendingIcp.id === icp.id && <Check size={15} className="text-blue-600" />}
+                  </div>
+                  <div className="text-xs text-gray-400 mt-0.5">
+                    {icp.industry} · {icp.size} · {icp.region}
+                  </div>
+                  <div className="text-xs text-gray-300 mt-0.5">更新：{icp.updatedAt}</div>
+                </button>
+              ))}
+            </div>
+            <div className="flex items-center justify-end gap-2">
+              <button
+                onClick={() => setShowIcpModal(false)}
+                className="text-sm border border-gray-200 rounded-lg px-4 py-2 text-gray-600 hover:bg-gray-50"
+              >
+                キャンセル
+              </button>
+              <button
+                onClick={() => { setSelectedIcp(pendingIcp); setShowIcpModal(false); }}
+                className="text-sm rounded-lg px-4 py-2 text-white font-medium"
+                style={{ background: 'linear-gradient(135deg, #3b82f6, #2563eb)' }}
+              >
+                このICPを適用
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Table Actions */}
       <div className="flex items-center justify-between mb-2">
