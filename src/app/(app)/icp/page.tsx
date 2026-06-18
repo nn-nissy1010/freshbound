@@ -272,26 +272,6 @@ export default function ICPPage() {
                 </div>
               ))}
             </div>
-
-            <div className="mt-5 pt-4 border-t border-gray-100">
-              <div className="flex items-center gap-1 mb-3">
-                <span className="text-xs font-semibold text-gray-700">AI予測</span>
-                <span className="text-xs text-gray-400">（この条件での市場規模）</span>
-              </div>
-              <div className="space-y-2">
-                {[
-                  { label: '対象企業数（推定）', value: '約 12,450 社', color: '#3b82f6' },
-                  { label: '月次新規HP企業数（推定）', value: '約 320 社', color: '#10b981' },
-                  { label: 'スコア上位企業の割合（推定）', value: '約 18 %', color: '#8b5cf6' },
-                ].map((item) => (
-                  <div key={item.label} className="flex items-center justify-between">
-                    <span className="text-xs text-gray-500">{item.label}</span>
-                    <span className="text-xs font-bold" style={{ color: item.color }}>{item.value}</span>
-                  </div>
-                ))}
-              </div>
-              <p className="text-xs text-gray-400 mt-3">※ 推定値は変更される可能性があります</p>
-            </div>
           </div>
         </div>
       </div>

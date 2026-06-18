@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import Image from 'next/image';
 import {
   LayoutDashboard,
   Building2,
@@ -34,18 +35,8 @@ export default function Sidebar() {
     >
       {/* Logo */}
       <div className="flex items-center gap-2 px-4 py-5 border-b border-white/10">
-        <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0"
-          style={{ background: 'linear-gradient(135deg, #3b82f6, #1d4ed8)' }}>
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z" fill="white" opacity="0.3"/>
-            <path d="M12 6c-3.31 0-6 2.69-6 6s2.69 6 6 6 6-2.69 6-6-2.69-6-6-6z" fill="white" opacity="0.6"/>
-            <circle cx="12" cy="12" r="3" fill="white"/>
-          </svg>
-        </div>
-        <div>
-          <div className="text-sm font-bold leading-tight">AIアウトバウンド</div>
-          <div className="text-xs text-blue-300 leading-tight">自動化</div>
-        </div>
+        <Image src="/logo.png" alt="Freshbound" width={40} height={40} className="rounded-xl" />
+        <div className="text-sm font-bold leading-tight">Freshbound</div>
       </div>
 
       {/* Navigation */}

@@ -5,6 +5,7 @@ import {
   Send, Mail, Eye, Reply, Star, TrendingUp, TrendingDown,
   ChevronRight, Calendar, Settings2, HelpCircle
 } from 'lucide-react';
+
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, PieChart, Pie, Cell
@@ -27,9 +28,6 @@ const pieData = [
   { name: 'エラー', value: 138, color: '#ef4444' },
 ];
 
-// B-1: Phase 2機能はダミー表示（実際には動かない）
-// - Web閲覧チャネル（F-13 匿名トラッキング）→ 準備中
-// - 電話推奨/商談打診アクション（F-11 AI次アクション）→ 返信あり表示のみ
 const hotLeads = [
   { rank: 1, name: '株式会社イノベーションズ', score: 92, action: 'メール開封（2回）', time: '5分前' },
   { rank: 2, name: '株式会社グロースパートナー', score: 88, action: 'メール開封（2回）', time: '18分前' },
@@ -40,28 +38,6 @@ const hotLeads = [
 
 const channelData = [
   { channel: 'メール', icon: Mail, count: '8,715', openRate: '21.0%', replyRate: '2.1%' },
-];
-
-// B-1: AI次アクション提案（F-11）はPhase 2。MVP段階では返信通知のみ表示
-const insights = [
-  {
-    type: 'success',
-    color: '#10b981',
-    bg: '#f0fdf4',
-    border: '#bbf7d0',
-    title: '開封率が向上しています',
-    desc: '今週の開封率は21.0%で、前週比 +2.3ptです。件名のパーソナライズが効果的です。',
-    action: '詳細を確認',
-  },
-  {
-    type: 'warning',
-    color: '#f59e0b',
-    bg: '#fffbeb',
-    border: '#fde68a',
-    title: '返信があった企業を確認',
-    desc: '今週28件の返信がありました。早めにご確認・フォローアップをお勧めします。',
-    action: '返信一覧を見る',
-  },
 ];
 
 const hpScoreData = [
@@ -83,7 +59,7 @@ export default function DashboardPage() {
   const [dateRange] = useState('2025/05/04 - 2025/05/10');
 
   return (
-    <div className="p-6 space-y-5">
+    <div className="p-4 space-y-3">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -122,16 +98,16 @@ export default function DashboardPage() {
           ].map((item) => {
             const Icon = item.icon;
             return (
-              <div key={item.label} className="bg-white rounded-xl border border-gray-100 p-4 shadow-sm">
-                <div className="flex items-center justify-between mb-2">
+              <div key={item.label} className="bg-white rounded-xl border border-gray-100 p-3 shadow-sm">
+                <div className="flex items-center justify-between mb-1.5">
                   <span className="text-xs text-gray-500">{item.label}</span>
-                  <div className="w-7 h-7 rounded-lg flex items-center justify-center"
+                  <div className="w-6 h-6 rounded-lg flex items-center justify-center"
                     style={{ backgroundColor: item.color + '15' }}>
-                    <Icon size={14} style={{ color: item.color }} />
+                    <Icon size={13} style={{ color: item.color }} />
                   </div>
                 </div>
                 <div className="flex items-baseline gap-1">
-                  <span className="text-2xl font-bold text-gray-800">{item.value}</span>
+                  <span className="text-xl font-bold text-gray-800">{item.value}</span>
                   <span className="text-sm text-gray-500">{item.unit}</span>
                 </div>
                 {item.change && (
@@ -153,7 +129,7 @@ export default function DashboardPage() {
       <div className="grid grid-cols-3 gap-4">
         {/* Trend Chart */}
         <div className="col-span-2 bg-white rounded-xl border border-gray-100 p-4 shadow-sm">
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-2">
               <h3 className="text-sm font-semibold text-gray-700">主要指標の推移</h3>
               <HelpCircle size={13} className="text-gray-400" />
@@ -163,7 +139,7 @@ export default function DashboardPage() {
               <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M6 9l6 6 6-6"/></svg>
             </button>
           </div>
-          <ResponsiveContainer width="100%" height={200}>
+          <ResponsiveContainer width="100%" height={160}>
             <LineChart data={trendData} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
               <XAxis dataKey="date" tick={{ fontSize: 11, fill: '#9ca3af' }} />
@@ -194,7 +170,7 @@ export default function DashboardPage() {
               すべて見る <ChevronRight size={12} />
             </button>
           </div>
-          <div className="space-y-2.5">
+          <div className="space-y-2">
             {hotLeads.map((lead) => (
               <div key={lead.rank} className="flex items-center gap-2">
                 <span className="text-xs font-bold text-gray-400 w-4">{lead.rank}</span>
@@ -325,30 +301,6 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* AI Insights */}
-      <div>
-        <div className="flex items-center gap-2 mb-3">
-          <span className="text-sm">🤖</span>
-          <h3 className="text-sm font-semibold text-gray-700">AIからのインサイト・次のアクション提案</h3>
-        </div>
-        <div className="grid grid-cols-2 gap-3">
-          {insights.map((item) => (
-            <div
-              key={item.title}
-              className="rounded-xl p-4 border"
-              style={{ backgroundColor: item.bg, borderColor: item.border }}
-            >
-              <div className="text-sm font-semibold mb-1.5" style={{ color: item.color }}>
-                {item.title}
-              </div>
-              <p className="text-xs text-gray-600 leading-relaxed mb-3">{item.desc}</p>
-              <button className="text-xs font-medium flex items-center gap-1" style={{ color: item.color }}>
-                {item.action} <ChevronRight size={11} />
-              </button>
-            </div>
-          ))}
-        </div>
-      </div>
     </div>
   );
 }
