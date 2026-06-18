@@ -59,7 +59,7 @@ export default function DashboardPage() {
   const [dateRange] = useState('2025/05/04 - 2025/05/10');
 
   return (
-    <div className="p-4 space-y-3">
+    <div className="p-3 space-y-2">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -87,7 +87,7 @@ export default function DashboardPage() {
 
       {/* Today's Summary */}
       <div>
-        <h2 className="text-sm font-semibold text-gray-700 mb-3">今日のサマリー <span className="text-gray-400 font-normal">（2025/05/10）</span></h2>
+        <h2 className="text-sm font-semibold text-gray-700 mb-2">今日のサマリー <span className="text-gray-400 font-normal">（2025/05/10）</span></h2>
         <div className="grid grid-cols-5 gap-3">
           {[
             { label: '配信数', value: '1,245', unit: '通', icon: Send, color: '#3b82f6', change: '+12.5%', up: true },
@@ -107,7 +107,7 @@ export default function DashboardPage() {
                   </div>
                 </div>
                 <div className="flex items-baseline gap-1">
-                  <span className="text-xl font-bold text-gray-800">{item.value}</span>
+                  <span className="text-lg font-bold text-gray-800">{item.value}</span>
                   <span className="text-sm text-gray-500">{item.unit}</span>
                 </div>
                 {item.change && (
@@ -126,9 +126,9 @@ export default function DashboardPage() {
       </div>
 
       {/* Charts Row */}
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-3 gap-3">
         {/* Trend Chart */}
-        <div className="col-span-2 bg-white rounded-xl border border-gray-100 p-4 shadow-sm">
+        <div className="col-span-2 bg-white rounded-xl border border-gray-100 p-3 shadow-sm">
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-2">
               <h3 className="text-sm font-semibold text-gray-700">主要指標の推移</h3>
@@ -139,7 +139,7 @@ export default function DashboardPage() {
               <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M6 9l6 6 6-6"/></svg>
             </button>
           </div>
-          <ResponsiveContainer width="100%" height={160}>
+          <ResponsiveContainer width="100%" height={130}>
             <LineChart data={trendData} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
               <XAxis dataKey="date" tick={{ fontSize: 11, fill: '#9ca3af' }} />
@@ -152,7 +152,7 @@ export default function DashboardPage() {
               <Line type="monotone" dataKey="返信" stroke="#8b5cf6" strokeWidth={2} dot={false} />
             </LineChart>
           </ResponsiveContainer>
-          <div className="flex items-center gap-4 mt-2 justify-center">
+          <div className="flex items-center gap-4 mt-1 justify-center">
             {[{ label: '配信', color: '#3b82f6' }, { label: '開封', color: '#10b981' }, { label: '返信', color: '#8b5cf6' }].map(l => (
               <div key={l.label} className="flex items-center gap-1.5">
                 <div className="w-3 h-0.5 rounded" style={{ backgroundColor: l.color }} />
@@ -163,14 +163,14 @@ export default function DashboardPage() {
         </div>
 
         {/* Hot Leads */}
-        <div className="bg-white rounded-xl border border-gray-100 p-4 shadow-sm">
-          <div className="flex items-center justify-between mb-3">
+        <div className="bg-white rounded-xl border border-gray-100 p-3 shadow-sm">
+          <div className="flex items-center justify-between mb-2">
             <h3 className="text-sm font-semibold text-gray-700">ホットリード TOP 5</h3>
             <button className="text-xs text-blue-600 hover:text-blue-700 flex items-center gap-0.5">
               すべて見る <ChevronRight size={12} />
             </button>
           </div>
-          <div className="space-y-2">
+          <div className="space-y-1.5">
             {hotLeads.map((lead) => (
               <div key={lead.rank} className="flex items-center gap-2">
                 <span className="text-xs font-bold text-gray-400 w-4">{lead.rank}</span>
@@ -186,16 +186,16 @@ export default function DashboardPage() {
       </div>
 
       {/* Bottom Row */}
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-3 gap-3">
         {/* Pie Chart */}
-        <div className="bg-white rounded-xl border border-gray-100 p-4 shadow-sm">
+        <div className="bg-white rounded-xl border border-gray-100 p-3 shadow-sm">
           <div className="flex items-center justify-between mb-2">
             <h3 className="text-sm font-semibold text-gray-700">配信ステータス内訳 <span className="text-gray-400 font-normal text-xs">（今週）</span></h3>
           </div>
           <div className="flex items-center gap-2">
-            <ResponsiveContainer width={120} height={120}>
+            <ResponsiveContainer width={100} height={100}>
               <PieChart>
-                <Pie data={pieData} cx="50%" cy="50%" innerRadius={35} outerRadius={55} dataKey="value" strokeWidth={0}>
+                <Pie data={pieData} cx="50%" cy="50%" innerRadius={28} outerRadius={44} dataKey="value" strokeWidth={0}>
                   {pieData.map((entry, index) => (
                     <Cell key={index} fill={entry.color} />
                   ))}
@@ -221,7 +221,7 @@ export default function DashboardPage() {
         </div>
 
         {/* New HP Companies */}
-        <div className="bg-white rounded-xl border border-gray-100 p-4 shadow-sm">
+        <div className="bg-white rounded-xl border border-gray-100 p-3 shadow-sm">
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-1">
               <h3 className="text-sm font-semibold text-gray-700">新規HP企業 <span className="text-gray-400 font-normal text-xs">（今週）</span></h3>
@@ -231,8 +231,8 @@ export default function DashboardPage() {
               すべて見る <ChevronRight size={12} />
             </button>
           </div>
-          <div className="mb-3">
-            <div className="text-3xl font-bold text-gray-800">328<span className="text-base font-normal text-gray-500 ml-1">社</span></div>
+          <div className="mb-2">
+            <div className="text-2xl font-bold text-gray-800">328<span className="text-base font-normal text-gray-500 ml-1">社</span></div>
             <div className="flex items-center gap-1 text-xs text-green-600 mt-0.5">
               <TrendingUp size={11} />
               前週比 +32社 (+10.8%)
@@ -250,7 +250,7 @@ export default function DashboardPage() {
               </div>
             ))}
           </div>
-          <div className="mt-3 pt-3 border-t border-gray-100">
+          <div className="mt-2 pt-2 border-t border-gray-100">
             <div className="text-xs text-gray-500 mb-2">判定ステータス</div>
             <div className="flex gap-2">
               {hpStatusData.map((item) => (
@@ -265,8 +265,8 @@ export default function DashboardPage() {
         </div>
 
         {/* Channel Results */}
-        <div className="bg-white rounded-xl border border-gray-100 p-4 shadow-sm">
-          <div className="flex items-center justify-between mb-3">
+        <div className="bg-white rounded-xl border border-gray-100 p-3 shadow-sm">
+          <div className="flex items-center justify-between mb-2">
             <h3 className="text-sm font-semibold text-gray-700">チャネル別成果 <span className="text-gray-400 font-normal text-xs">（今週）</span></h3>
             <button className="text-xs text-blue-600 hover:text-blue-700">すべて</button>
           </div>

@@ -42,9 +42,9 @@ export default function CSVImportPage() {
   };
 
   return (
-    <div className="p-6">
+    <div className="p-4">
       {/* Header */}
-      <div className="flex items-center justify-between mb-5">
+      <div className="flex items-center justify-between mb-3">
         <div>
           <div className="flex items-center gap-2">
             <h1 className="text-xl font-bold text-gray-800">CSV取込</h1>
@@ -69,8 +69,8 @@ export default function CSVImportPage() {
         {/* Main Content */}
         <div className="col-span-2 space-y-4">
           {/* Steps */}
-          <div className="bg-white rounded-xl border border-gray-100 p-5 shadow-sm">
-            <div className="flex items-center gap-0 mb-6">
+          <div className="bg-white rounded-xl border border-gray-100 p-4 shadow-sm">
+            <div className="flex items-center gap-0 mb-3">
               {steps.map((step, i) => (
                 <div key={step} className="flex items-center flex-1">
                   <div className="flex items-center gap-2">
@@ -98,7 +98,7 @@ export default function CSVImportPage() {
 
             {/* Upload Area */}
             <div
-              className={`border-2 border-dashed rounded-xl p-10 text-center transition-colors cursor-pointer ${
+              className={`border-2 border-dashed rounded-xl p-5 text-center transition-colors cursor-pointer ${
                 isDragging ? 'border-blue-400 bg-blue-50' : 'border-gray-200 hover:border-blue-300 hover:bg-gray-50'
               }`}
               onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
@@ -108,29 +108,28 @@ export default function CSVImportPage() {
             >
               <input ref={fileInputRef} type="file" accept=".csv" className="hidden"
                 onChange={(e) => e.target.files?.[0] && setUploadedFile(e.target.files[0].name)} />
-              <div className="flex flex-col items-center gap-3">
-                <div className="w-14 h-14 rounded-full bg-blue-50 flex items-center justify-center">
-                  <Upload size={24} className="text-blue-500" />
+              <div className="flex flex-col items-center gap-2">
+                <div className="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center">
+                  <Upload size={18} className="text-blue-500" />
                 </div>
-                <div>
+                <div className="flex items-center gap-3">
                   <p className="text-sm font-medium text-gray-700">CSVファイルをドラッグ＆ドロップ</p>
-                  <p className="text-xs text-gray-400 mt-1">または</p>
+                  <span className="text-xs text-gray-400">または</span>
+                  <button
+                    type="button"
+                    className="text-sm border border-blue-300 text-blue-600 rounded-lg px-3 py-1.5 hover:bg-blue-50 font-medium"
+                    onClick={(e) => { e.stopPropagation(); fileInputRef.current?.click(); }}
+                  >
+                    ファイルを選択
+                  </button>
                 </div>
-                <button
-                  type="button"
-                  className="text-sm border border-blue-300 text-blue-600 rounded-lg px-4 py-2 hover:bg-blue-50 font-medium"
-                  onClick={(e) => { e.stopPropagation(); fileInputRef.current?.click(); }}
-                >
-                  ファイルを選択
-                </button>
-                <p className="text-xs text-gray-400">対応形式：CSV（UTF-8 / Shift-JIS）　最大ファイルサイズ：10MB</p>
-                <p className="text-xs text-gray-400">文字コードは自動判定されます</p>
+                <p className="text-xs text-gray-400">CSV（UTF-8 / Shift-JIS）・最大10MB・文字コード自動判定</p>
               </div>
             </div>
           </div>
 
           {/* Column Mapping */}
-          <div className="bg-white rounded-xl border border-gray-100 p-5 shadow-sm">
+          <div className="bg-white rounded-xl border border-gray-100 p-4 shadow-sm">
             <div className="mb-4">
               <h2 className="text-sm font-bold text-gray-800 mb-1">
                 カラムマッピング <span className="text-red-500 text-xs">必須</span>
@@ -195,7 +194,7 @@ export default function CSVImportPage() {
         {/* Right Panel */}
         <div className="space-y-4">
           {/* Import Summary */}
-          <div className="bg-white rounded-xl border border-gray-100 p-5 shadow-sm">
+          <div className="bg-white rounded-xl border border-gray-100 p-4 shadow-sm">
             <h2 className="text-sm font-bold text-gray-800 mb-4">取込サマリー</h2>
             <div className="space-y-3">
               {([
@@ -243,7 +242,7 @@ export default function CSVImportPage() {
           </div>
 
           {/* Import History */}
-          <div className="bg-white rounded-xl border border-gray-100 p-5 shadow-sm">
+          <div className="bg-white rounded-xl border border-gray-100 p-4 shadow-sm">
             <div className="flex items-center justify-between mb-3">
               <h2 className="text-sm font-bold text-gray-800">最近の取込履歴</h2>
               <button className="text-xs text-blue-600 hover:text-blue-700">すべて見る</button>
