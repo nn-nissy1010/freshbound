@@ -135,7 +135,7 @@ export default function DeliveryHistoryPage() {
   return (
     <div className="p-6">
       {/* Header */}
-      <div className="flex items-center justify-between mb-5">
+      <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between mb-5">
         <div>
           <div className="flex items-center gap-2">
             <h1 className="text-xl font-bold text-gray-800">配信履歴</h1>
@@ -143,7 +143,7 @@ export default function DeliveryHistoryPage() {
           </div>
           <p className="text-sm text-gray-500 mt-0.5">メール配信の履歴と反応状況を確認できます。</p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           <button className="flex items-center gap-2 text-sm border border-gray-200 rounded-lg px-3 py-2 bg-white hover:bg-gray-50 text-gray-600">
             <Download size={14} />
             レポートをエクスポート
@@ -217,7 +217,7 @@ export default function DeliveryHistoryPage() {
       </div>
 
       {/* Summary Stats */}
-      <div className="grid grid-cols-5 gap-3 mb-4">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 mb-4">
         {[
           { label: '配信総数', value: '12,450', unit: '通', sub: '前月比 +15.2%', color: '#3b82f6', up: true },
           { label: '到達数', value: '10,862', unit: '通', sub: '到達率 87.3%', color: '#10b981' },
@@ -237,7 +237,7 @@ export default function DeliveryHistoryPage() {
       </div>
 
       {/* Table Actions */}
-      <div className="flex items-center justify-between mb-2">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between mb-2">
         <div className="flex items-center gap-2">
           <span className="text-xs text-gray-500">{selected.length}件選択中</span>
           {selected.length > 0 && (
@@ -250,7 +250,7 @@ export default function DeliveryHistoryPage() {
         <div className="flex items-center gap-2 text-xs text-gray-500">
           <span>1-20 / 156件</span>
           <button className="p-1 border border-gray-200 rounded hover:bg-gray-50"><ChevronLeft size={14} /></button>
-          <div className="flex gap-1">
+          <div className="hidden sm:flex gap-1">
             {[1,2,3,'...',8].map((p, i) => (
               <button key={i} className={`w-7 h-7 rounded text-xs ${p === 1 ? 'bg-blue-600 text-white' : 'border border-gray-200 hover:bg-gray-50 text-gray-600'}`}>
                 {p}
@@ -258,7 +258,7 @@ export default function DeliveryHistoryPage() {
             ))}
           </div>
           <button className="p-1 border border-gray-200 rounded hover:bg-gray-50"><ChevronRight size={14} /></button>
-          <select className="border border-gray-200 rounded px-2 py-1 text-xs bg-white">
+          <select className="hidden sm:block border border-gray-200 rounded px-2 py-1 text-xs bg-white">
             <option>20件表示</option>
           </select>
         </div>
@@ -266,7 +266,8 @@ export default function DeliveryHistoryPage() {
 
       {/* Table */}
       <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden mb-5">
-        <table className="w-full">
+        <div className="overflow-x-auto">
+        <table className="w-full min-w-[900px]">
           <thead>
             <tr className="border-b border-gray-100 bg-gray-50">
               <th className="w-10 px-4 py-3">
@@ -333,6 +334,7 @@ export default function DeliveryHistoryPage() {
             ))}
           </tbody>
         </table>
+        </div>
       </div>
 
       <p className="text-xs text-gray-400 mt-3">※ 指標の定義についてはヘルプをご参照ください。</p>
@@ -358,7 +360,8 @@ export default function DeliveryHistoryPage() {
 
         {/* Draft table */}
         <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
-          <table className="w-full">
+          <div className="overflow-x-auto">
+          <table className="w-full min-w-[600px]">
             <thead>
               <tr className="border-b border-gray-100 bg-gray-50">
                 <th className="text-left text-xs font-medium text-gray-500 px-4 py-3">企業名 / 担当者</th>
@@ -417,6 +420,7 @@ export default function DeliveryHistoryPage() {
               })}
             </tbody>
           </table>
+          </div>
         </div>
       </>)}
 

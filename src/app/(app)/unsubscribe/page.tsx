@@ -86,7 +86,7 @@ export default function UnsubscribePage() {
   return (
     <div className="p-6">
       {/* Header */}
-      <div className="flex items-center justify-between mb-5">
+      <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between mb-5">
         <div>
           <div className="flex items-center gap-2">
             <h1 className="text-xl font-bold text-gray-800">配信停止リスト管理</h1>
@@ -94,7 +94,7 @@ export default function UnsubscribePage() {
           </div>
           <p className="text-sm text-gray-500 mt-0.5">配信停止されたメールアドレスを管理し、再配信を防止します。</p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           <button className="flex items-center gap-2 text-sm border border-gray-200 rounded-lg px-3 py-2 bg-white hover:bg-gray-50 text-gray-600">
             <Download size={14} />
             リストをエクスポート（CSV）
@@ -144,7 +144,7 @@ export default function UnsubscribePage() {
           </div>
 
           {/* Tabs */}
-          <div className="flex items-center gap-1 mb-3">
+          <div className="flex items-center gap-1 mb-3 flex-wrap">
             {tabs.map((tab) => (
               <button
                 key={tab.id}
@@ -166,8 +166,8 @@ export default function UnsubscribePage() {
           </div>
 
           {/* Table Actions */}
-          <div className="flex items-center justify-between mb-2">
-            <div className="flex items-center gap-2">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between mb-2">
+            <div className="flex items-center gap-2 flex-wrap">
               {selected.length > 0 && (
                 <button className="flex items-center gap-1.5 text-xs border border-red-200 rounded-lg px-2.5 py-1.5 bg-white hover:bg-red-50 text-red-500">
                   選択したリストを削除（{selected.length}件）
@@ -180,7 +180,7 @@ export default function UnsubscribePage() {
             <div className="flex items-center gap-2 text-xs text-gray-500">
               <span>1-20 / 2,315件</span>
               <button className="p-1 border border-gray-200 rounded hover:bg-gray-50"><ChevronLeft size={14} /></button>
-              <div className="flex gap-1">
+              <div className="hidden sm:flex gap-1">
                 {[1,2,3,4,5,'...',116].map((p, i) => (
                   <button key={i} className={`w-7 h-7 rounded text-xs ${p === 1 ? 'bg-blue-600 text-white' : 'border border-gray-200 hover:bg-gray-50 text-gray-600'}`}>
                     {p}
@@ -188,7 +188,7 @@ export default function UnsubscribePage() {
                 ))}
               </div>
               <button className="p-1 border border-gray-200 rounded hover:bg-gray-50"><ChevronRight size={14} /></button>
-              <select className="border border-gray-200 rounded px-2 py-1 text-xs bg-white">
+              <select className="hidden sm:block border border-gray-200 rounded px-2 py-1 text-xs bg-white">
                 <option>20件表示</option>
               </select>
             </div>
@@ -196,7 +196,8 @@ export default function UnsubscribePage() {
 
           {/* Table */}
           <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
-            <table className="w-full">
+            <div className="overflow-x-auto">
+            <table className="w-full min-w-[700px]">
               <thead>
                 <tr className="border-b border-gray-100 bg-gray-50">
                   <th className="w-10 px-4 py-3">
@@ -238,6 +239,7 @@ export default function UnsubscribePage() {
                 ))}
               </tbody>
             </table>
+            </div>
           </div>
 
       </div>

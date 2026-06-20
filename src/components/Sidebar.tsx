@@ -14,6 +14,7 @@ import {
   Settings,
   ChevronDown,
   User,
+  X,
 } from 'lucide-react';
 
 const navItems = [
@@ -27,18 +28,36 @@ const navItems = [
   { href: '/settings', label: '設定', icon: Settings },
 ];
 
-export default function Sidebar() {
+interface SidebarProps {
+  isOpen: boolean;
+  onClose: () => void;
+}
+
+export default function Sidebar({ isOpen, onClose }: SidebarProps) {
   const pathname = usePathname();
 
   return (
     <aside
-      className="flex flex-col w-56 h-screen sticky top-0 overflow-y-auto text-white flex-shrink-0"
+      className={`
+        flex flex-col w-56 h-screen overflow-y-auto text-white flex-shrink-0
+        fixed top-0 bottom-0 left-0 z-50 transition-transform duration-300 ease-in-out
+        md:sticky md:bottom-auto md:left-auto md:z-auto md:translate-x-0
+        ${isOpen ? 'translate-x-0' : '-translate-x-full'}
+      `}
       style={{ backgroundColor: '#0f1629' }}
     >
       {/* Logo */}
-      <div className="flex items-center gap-2 px-4 py-5 border-b border-white/10">
-        <Image src="/logo.png" alt="Freshbound" width={40} height={40} className="rounded-xl" />
-        <div className="text-sm font-bold leading-tight">Freshbound</div>
+      <div className="flex items-center justify-between px-4 py-5 border-b border-white/10 flex-shrink-0">
+        <div className="flex items-center gap-2">
+          <Image src="/logo.png" alt="Freshbound" width={40} height={40} className="rounded-xl" />
+          <div className="text-sm font-bold leading-tight">Freshbound</div>
+        </div>
+        <button
+          onClick={onClose}
+          className="md:hidden p-1 rounded hover:bg-white/10 text-gray-400 hover:text-white"
+        >
+          <X size={18} />
+        </button>
       </div>
 
       {/* Navigation */}
@@ -50,6 +69,7 @@ export default function Sidebar() {
             <Link
               key={item.href}
               href={item.href}
+              onClick={onClose}
               className={`flex items-center gap-3 px-3 py-2.5 rounded-lg mb-1 text-sm transition-all ${
                 isActive
                   ? 'bg-blue-600 text-white font-medium'
@@ -64,7 +84,7 @@ export default function Sidebar() {
       </nav>
 
       {/* Tenant Info */}
-      <div className="px-3 py-3 border-t border-white/10">
+      <div className="px-3 py-3 border-t border-white/10 flex-shrink-0">
         <div className="bg-white/5 rounded-lg px-3 py-2 mb-3">
           <div className="text-xs text-gray-400">株式会社サンプル</div>
           <div className="text-xs text-gray-400">プラン：スタンダード</div>

@@ -132,7 +132,7 @@ export default function CompaniesPage() {
   return (
     <div className="p-6">
       {/* Header */}
-      <div className="flex items-center justify-between mb-5">
+      <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between mb-5">
         <div>
           <div className="flex items-center gap-2">
             <h1 className="text-xl font-bold text-gray-800">企業リスト</h1>
@@ -140,7 +140,7 @@ export default function CompaniesPage() {
           </div>
           <p className="text-sm text-gray-500 mt-0.5">ICP条件に合致した企業の一覧です。リストを絞り込み、メール配信や詳細確認ができます。</p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           <button className="flex items-center gap-2 text-sm border border-gray-200 rounded-lg px-3 py-2 bg-white hover:bg-gray-50 text-gray-600">
             <Download size={14} />
             リストをエクスポート
@@ -254,8 +254,8 @@ export default function CompaniesPage() {
       )}
 
       {/* Table Actions */}
-      <div className="flex items-center justify-between mb-2">
-        <div className="flex items-center gap-2">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between mb-2">
+        <div className="flex items-center gap-2 flex-wrap">
           <span className="text-xs text-gray-500">{selected.length}件選択中</span>
           {selected.length > 0 && (
             <>
@@ -276,7 +276,7 @@ export default function CompaniesPage() {
         <div className="flex items-center gap-2 text-xs text-gray-500">
           <span>1-20 / 1,248件</span>
           <button className="p-1 border border-gray-200 rounded hover:bg-gray-50"><ChevronLeft size={14} /></button>
-          <div className="flex gap-1">
+          <div className="hidden sm:flex gap-1">
             {[1,2,3,'...',63].map((p, i) => (
               <button key={i} className={`w-7 h-7 rounded text-xs ${p === 1 ? 'bg-blue-600 text-white' : 'border border-gray-200 hover:bg-gray-50 text-gray-600'}`}>
                 {p}
@@ -284,7 +284,7 @@ export default function CompaniesPage() {
             ))}
           </div>
           <button className="p-1 border border-gray-200 rounded hover:bg-gray-50"><ChevronRight size={14} /></button>
-          <select className="border border-gray-200 rounded px-2 py-1 text-xs bg-white">
+          <select className="hidden sm:block border border-gray-200 rounded px-2 py-1 text-xs bg-white">
             <option>20件表示</option>
             <option>50件表示</option>
           </select>
@@ -293,7 +293,8 @@ export default function CompaniesPage() {
 
       {/* Table */}
       <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
-        <table className="w-full">
+        <div className="overflow-x-auto">
+        <table className="w-full min-w-[1000px]">
           <thead>
             <tr className="border-b border-gray-100 bg-gray-50">
               <th className="w-10 px-4 py-3">
@@ -389,6 +390,7 @@ export default function CompaniesPage() {
             ))}
           </tbody>
         </table>
+        </div>
       </div>
 
       {/* Score Legend */}

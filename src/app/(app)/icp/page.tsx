@@ -29,7 +29,7 @@ export default function ICPPage() {
   return (
     <div className="p-6">
       {/* Header */}
-      <div className="flex items-center justify-between mb-5">
+      <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between mb-5">
         <div>
           <div className="flex items-center gap-2">
             <h1 className="text-xl font-bold text-gray-800">ICP設定</h1>
@@ -46,7 +46,7 @@ export default function ICPPage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-3 gap-5">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
         {/* Main Form */}
         <div className="col-span-2 space-y-5">
           <div className="bg-white rounded-xl border border-gray-100 p-5 shadow-sm">

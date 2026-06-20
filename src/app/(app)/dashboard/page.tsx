@@ -61,7 +61,7 @@ export default function DashboardPage() {
   return (
     <div className="p-3 space-y-2">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
         <div>
           <div className="flex items-center gap-2">
             <h1 className="text-xl font-bold text-gray-800">ダッシュボード</h1>
@@ -69,16 +69,16 @@ export default function DashboardPage() {
           </div>
           <p className="text-sm text-gray-500 mt-0.5">本日の活動状況と成果のサマリーです。</p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           <button className="flex items-center gap-2 text-sm border border-gray-200 rounded-lg px-3 py-2 bg-white hover:bg-gray-50 text-gray-600">
             <Calendar size={14} />
             {dateRange}
           </button>
-          <button className="flex items-center gap-2 text-sm border border-gray-200 rounded-lg px-3 py-2 bg-white hover:bg-gray-50 text-gray-600">
+          <button className="hidden sm:flex items-center gap-2 text-sm border border-gray-200 rounded-lg px-3 py-2 bg-white hover:bg-gray-50 text-gray-600">
             比較：前週
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M6 9l6 6 6-6"/></svg>
           </button>
-          <button className="flex items-center gap-2 text-sm border border-gray-200 rounded-lg px-3 py-2 bg-white hover:bg-gray-50 text-gray-600">
+          <button className="hidden sm:flex items-center gap-2 text-sm border border-gray-200 rounded-lg px-3 py-2 bg-white hover:bg-gray-50 text-gray-600">
             <Settings2 size={14} />
             カスタマイズ
           </button>
@@ -88,7 +88,7 @@ export default function DashboardPage() {
       {/* Today's Summary */}
       <div>
         <h2 className="text-sm font-semibold text-gray-700 mb-2">今日のサマリー <span className="text-gray-400 font-normal">（2025/05/10）</span></h2>
-        <div className="grid grid-cols-5 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
           {[
             { label: '配信数', value: '1,245', unit: '通', icon: Send, color: '#3b82f6', change: '+12.5%', up: true },
             { label: '到達数', value: '1,102', unit: '通', icon: Mail, color: '#10b981', sub: '到達率 88.5%', change: null },
@@ -126,7 +126,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Charts Row */}
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
         {/* Trend Chart */}
         <div className="col-span-2 bg-white rounded-xl border border-gray-100 p-3 shadow-sm">
           <div className="flex items-center justify-between mb-2">
@@ -186,7 +186,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Bottom Row */}
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
         {/* Pie Chart */}
         <div className="bg-white rounded-xl border border-gray-100 p-3 shadow-sm">
           <div className="flex items-center justify-between mb-2">

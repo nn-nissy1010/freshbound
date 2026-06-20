@@ -31,9 +31,9 @@ export default function SettingsPage() {
         <p className="text-sm text-gray-500 mt-0.5">アカウントとシステムの設定を管理します。</p>
       </div>
 
-      <div className="flex gap-5">
+      <div className="flex flex-col md:flex-row gap-5">
         {/* Sidebar */}
-        <div className="w-52 flex-shrink-0">
+        <div className="w-full md:w-52 flex-shrink-0">
           <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
             {sidebarItems.map((item) => {
               const Icon = item.icon;
@@ -81,7 +81,7 @@ export default function SettingsPage() {
                     </div>
                   </div>
                 </div>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {[
                     { label: '姓', placeholder: '山田', value: '山田' },
                     { label: '名', placeholder: '太郎', value: '太郎' },
@@ -240,7 +240,7 @@ export default function SettingsPage() {
                     </button>
                   </div>
                 </div>
-                <div className="grid grid-cols-3 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   {[
                     { label: '月間配信上限', value: '3,000通/日', used: '1,245通', pct: 41 },
                     { label: '企業発掘上限', value: '1,000社/日', used: '328社', pct: 33 },
@@ -296,7 +296,7 @@ export default function SettingsPage() {
           {activeSection === 'company' && (
             <div className="bg-white rounded-xl border border-gray-100 p-5 shadow-sm">
               <h2 className="text-sm font-bold text-gray-800 mb-4">会社情報</h2>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {[
                   { label: '会社名', value: '株式会社サンプル', full: true },
                   { label: 'テナントID', value: 'tenant_12345', disabled: true },

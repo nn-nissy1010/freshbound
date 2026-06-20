@@ -44,7 +44,7 @@ export default function CSVImportPage() {
   return (
     <div className="p-4">
       {/* Header */}
-      <div className="flex items-center justify-between mb-3">
+      <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between mb-3">
         <div>
           <div className="flex items-center gap-2">
             <h1 className="text-xl font-bold text-gray-800">CSV取込</h1>
@@ -52,7 +52,7 @@ export default function CSVImportPage() {
           </div>
           <p className="text-sm text-gray-500 mt-0.5">お持ちの既存リストをCSVで取り込み、AI配信の対象に追加できます。</p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           <button className="flex items-center gap-2 text-sm border border-gray-200 rounded-lg px-3 py-2 bg-white hover:bg-gray-50 text-gray-600">
             <Download size={14} />
             取込テンプレートをダウンロード
@@ -65,7 +65,7 @@ export default function CSVImportPage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-3 gap-5">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
         {/* Main Content */}
         <div className="col-span-2 space-y-4">
           {/* Steps */}
@@ -137,6 +137,8 @@ export default function CSVImportPage() {
               <p className="text-xs text-gray-500">CSVの列をシステムの項目にマッピングしてください。<span className="text-red-500">*</span> は必須項目です。</p>
             </div>
 
+            <div className="overflow-x-auto">
+            <div className="min-w-[480px]">
             <div className="grid grid-cols-3 gap-2 mb-2">
               <div className="text-xs font-medium text-gray-500">CSVの列（サンプル）</div>
               <div className="text-xs font-medium text-gray-500">システムの項目</div>
@@ -160,6 +162,8 @@ export default function CSVImportPage() {
                   <div className="text-xs text-gray-400 truncate">{mapping.sample}</div>
                 </div>
               ))}
+            </div>
+            </div>
             </div>
 
             <div className="flex items-center gap-2 mt-4 pt-4 border-t border-gray-100">
