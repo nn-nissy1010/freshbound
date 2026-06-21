@@ -7,24 +7,32 @@ import StatusBadge from '@/components/admin/StatusBadge';
 import FilterBar from '@/components/admin/FilterBar';
 import {
   Plus, Download, MoreVertical, ChevronLeft, ChevronRight,
-  Eye, UserCheck, Ban, TrendingUp, RefreshCw,
+  Eye, UserCheck, Ban, TrendingUp, RefreshCw, CheckCircle, X,
 } from 'lucide-react';
 
 const tenants = [
-  { id: 'T001', name: '株式会社テックスタート', plan: 'standard', users: 5, status: 'active', emailsSent: 12450, created: '2025/01/15', lastActive: '2025/05/10', reseller: 'Agency A' },
-  { id: 'T002', name: 'グロースSaaS株式会社', plan: 'enterprise', users: 12, status: 'active', emailsSent: 38200, created: '2024/11/02', lastActive: '2025/05/10', reseller: '—' },
-  { id: 'T003', name: '株式会社デジタルワークス', plan: 'trial', users: 2, status: 'active', emailsSent: 1200, created: '2025/05/01', lastActive: '2025/05/09', reseller: 'Agency B' },
-  { id: 'T004', name: '株式会社マーケットリンク', plan: 'standard', users: 4, status: 'suspended', emailsSent: 9800, created: '2024/12/20', lastActive: '2025/05/08', reseller: '—' },
-  { id: 'T005', name: 'イノベーション合同会社', plan: 'standard', users: 3, status: 'active', emailsSent: 5600, created: '2025/02/10', lastActive: '2025/05/10', reseller: 'Agency A' },
-  { id: 'T006', name: '株式会社クラウドビズ', plan: 'enterprise', users: 8, status: 'active', emailsSent: 28900, created: '2024/09/05', lastActive: '2025/05/10', reseller: '—' },
-  { id: 'T007', name: '株式会社セールスブースト', plan: 'standard', users: 6, status: 'active', emailsSent: 15300, created: '2025/03/18', lastActive: '2025/05/09', reseller: 'Agency C' },
-  { id: 'T008', name: '合同会社フューチャーズ', plan: 'trial', users: 1, status: 'inactive', emailsSent: 0, created: '2025/05/08', lastActive: '2025/05/08', reseller: '—' },
+  { id: 'T001', name: '株式会社テックスタート', plan: 'standard', users: 5, status: 'active', subscriptionStatus: 'active', emailsSent: 12450, created: '2025/01/15', lastActive: '2025/05/10', reseller: 'Agency A' },
+  { id: 'T002', name: 'グロースSaaS株式会社', plan: 'enterprise', users: 12, status: 'active', subscriptionStatus: 'active', emailsSent: 38200, created: '2024/11/02', lastActive: '2025/05/10', reseller: '—' },
+  { id: 'T003', name: '株式会社デジタルワークス', plan: 'trial', users: 2, status: 'active', subscriptionStatus: 'trialing', emailsSent: 1200, created: '2025/05/01', lastActive: '2025/05/09', reseller: 'Agency B' },
+  { id: 'T004', name: '株式会社マーケットリンク', plan: 'standard', users: 4, status: 'suspended', subscriptionStatus: 'past_due', emailsSent: 9800, created: '2024/12/20', lastActive: '2025/05/08', reseller: '—' },
+  { id: 'T005', name: 'イノベーション合同会社', plan: 'standard', users: 3, status: 'active', subscriptionStatus: 'active', emailsSent: 5600, created: '2025/02/10', lastActive: '2025/05/10', reseller: 'Agency A' },
+  { id: 'T006', name: '株式会社クラウドビズ', plan: 'enterprise', users: 8, status: 'active', subscriptionStatus: 'active', emailsSent: 28900, created: '2024/09/05', lastActive: '2025/05/10', reseller: '—' },
+  { id: 'T007', name: '株式会社セールスブースト', plan: 'standard', users: 6, status: 'active', subscriptionStatus: 'active', emailsSent: 15300, created: '2025/03/18', lastActive: '2025/05/09', reseller: 'Agency C' },
+  { id: 'T008', name: '合同会社フューチャーズ', plan: 'trial', users: 1, status: 'inactive', subscriptionStatus: 'canceled', emailsSent: 0, created: '2025/05/08', lastActive: '2025/05/08', reseller: '—' },
 ];
+
+const subStatusMap: Record<string, { label: string; bg: string; text: string }> = {
+  active:    { label: 'active',    bg: '#dcfce7', text: '#16a34a' },
+  trialing:  { label: 'trialing', bg: '#dbeafe', text: '#2563eb' },
+  past_due:  { label: 'past_due', bg: '#fee2e2', text: '#dc2626' },
+  canceled:  { label: 'canceled', bg: '#f3f4f6', text: '#6b7280' },
+};
 
 export default function TenantsPage() {
   const { lang } = useLang();
   const [search, setSearch] = useState('');
   const [actionMenu, setActionMenu] = useState<string | null>(null);
+  const [showAddModal, setShowAddModal] = useState(false);
 
   const filtered = tenants.filter(t =>
     t.name.toLowerCase().includes(search.toLowerCase()) ||
@@ -42,7 +50,7 @@ export default function TenantsPage() {
           <button className="flex items-center gap-2 text-sm border border-gray-200 rounded-lg px-3 py-2 bg-white hover:bg-gray-50 text-gray-600">
             <Download size={14} />{t(lang, 'エクスポート', 'Export')}
           </button>
-          <button className="flex items-center gap-2 text-sm rounded-lg px-3 py-2 text-white font-medium"
+          <button onClick={() => setShowAddModal(true)} className="flex items-center gap-2 text-sm rounded-lg px-3 py-2 text-white font-medium"
             style={{ background: 'linear-gradient(135deg, #3b82f6, #2563eb)' }}>
             <Plus size={14} />{t(lang, 'テナント追加', 'Add Tenant')}
           </button>
@@ -83,6 +91,7 @@ export default function TenantsPage() {
                 <th className="text-left text-xs font-medium text-gray-500 px-3 py-3">{t(lang, 'プラン', 'Plan')}</th>
                 <th className="text-right text-xs font-medium text-gray-500 px-3 py-3">{t(lang, 'ユーザー数', 'Users')}</th>
                 <th className="text-left text-xs font-medium text-gray-500 px-3 py-3">{t(lang, 'ステータス', 'Status')}</th>
+                <th className="text-left text-xs font-medium text-gray-500 px-3 py-3">{t(lang, 'Stripe', 'Stripe')}</th>
                 <th className="text-right text-xs font-medium text-gray-500 px-3 py-3">{t(lang, '配信数', 'Emails Sent')}</th>
                 <th className="text-left text-xs font-medium text-gray-500 px-3 py-3">{t(lang, '作成日', 'Created')}</th>
                 <th className="text-left text-xs font-medium text-gray-500 px-3 py-3">{t(lang, '最終活動', 'Last Active')}</th>
@@ -102,6 +111,9 @@ export default function TenantsPage() {
                   <td className="px-3 py-3"><StatusBadge status={tenant.plan} /></td>
                   <td className="px-3 py-3 text-sm text-gray-700 text-right">{tenant.users}</td>
                   <td className="px-3 py-3"><StatusBadge status={tenant.status} /></td>
+                  <td className="px-3 py-3">
+                    {(() => { const s = subStatusMap[tenant.subscriptionStatus] ?? subStatusMap.canceled; return <span className="text-xs px-2 py-0.5 rounded-full font-medium" style={{ backgroundColor: s.bg, color: s.text }}>{s.label}</span>; })()}
+                  </td>
                   <td className="px-3 py-3 text-sm text-gray-700 text-right">{tenant.emailsSent.toLocaleString()}</td>
                   <td className="px-3 py-3 text-xs text-gray-500">{tenant.created}</td>
                   <td className="px-3 py-3 text-xs text-gray-500">{tenant.lastActive}</td>
@@ -129,9 +141,15 @@ export default function TenantsPage() {
                             <RefreshCw size={12} />{t(lang, 'クォータリセット', 'Reset Quota')}
                           </button>
                           <div className="border-t border-gray-100 my-1" />
-                          <button className="flex items-center gap-2 px-3 py-2 text-xs text-red-600 hover:bg-red-50 w-full">
-                            <Ban size={12} />{t(lang, '停止する', 'Suspend')}
-                          </button>
+                          {tenant.status === 'suspended' ? (
+                            <button className="flex items-center gap-2 px-3 py-2 text-xs text-green-600 hover:bg-green-50 w-full">
+                              <CheckCircle size={12} />{t(lang, 'アクティブに戻す', 'Activate')}
+                            </button>
+                          ) : (
+                            <button className="flex items-center gap-2 px-3 py-2 text-xs text-red-600 hover:bg-red-50 w-full">
+                              <Ban size={12} />{t(lang, '停止する', 'Suspend')}
+                            </button>
+                          )}
                         </div>
                       )}
                     </div>
@@ -155,6 +173,55 @@ export default function TenantsPage() {
           <button className="p-1 border border-gray-200 rounded hover:bg-gray-50"><ChevronRight size={14} /></button>
         </div>
       </div>
+
+      {/* Add Tenant Modal */}
+      {showAddModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-md mx-4 p-6">
+            <div className="flex items-center justify-between mb-5">
+              <h2 className="text-base font-bold text-gray-800">{t(lang, 'テナント追加', 'Add Tenant')}</h2>
+              <button onClick={() => setShowAddModal(false)} className="p-1 hover:bg-gray-100 rounded text-gray-400"><X size={16} /></button>
+            </div>
+            <div className="space-y-4">
+              <div>
+                <label className="text-xs font-medium text-gray-600 block mb-1">{t(lang, '企業名', 'Company Name')} *</label>
+                <input className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder={t(lang, '株式会社〇〇', 'Company name')} />
+              </div>
+              <div>
+                <label className="text-xs font-medium text-gray-600 block mb-1">{t(lang, '管理者メール', 'Admin Email')} *</label>
+                <input type="email" className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="admin@example.com" />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs font-medium text-gray-600 block mb-1">{t(lang, 'プラン', 'Plan')} *</label>
+                  <select className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <option value="trial">Trial</option>
+                    <option value="standard">Standard</option>
+                    <option value="enterprise">Enterprise</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="text-xs font-medium text-gray-600 block mb-1">{t(lang, '代理店', 'Reseller')}</label>
+                  <select className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <option value="">—</option>
+                    <option value="AG001">Agency A</option>
+                    <option value="AG002">Agency B</option>
+                    <option value="AG003">Agency C</option>
+                  </select>
+                </div>
+              </div>
+              <div>
+                <label className="text-xs font-medium text-gray-600 block mb-1">Stripe Customer ID</label>
+                <input className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="cus_xxxxxxxxxxxxxxxx" />
+              </div>
+            </div>
+            <div className="flex items-center justify-end gap-2 mt-6">
+              <button onClick={() => setShowAddModal(false)} className="text-sm px-4 py-2 border border-gray-200 rounded-lg hover:bg-gray-50 text-gray-600">{t(lang, 'キャンセル', 'Cancel')}</button>
+              <button className="text-sm px-4 py-2 rounded-lg text-white font-medium" style={{ background: 'linear-gradient(135deg, #3b82f6, #2563eb)' }}>{t(lang, '追加する', 'Add Tenant')}</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
