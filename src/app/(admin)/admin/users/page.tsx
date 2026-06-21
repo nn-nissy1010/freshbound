@@ -5,7 +5,7 @@ import { useLang } from '@/components/admin/LangContext';
 import { t } from '@/lib/i18n';
 import StatusBadge from '@/components/admin/StatusBadge';
 import FilterBar from '@/components/admin/FilterBar';
-import { MoreVertical, ChevronLeft, ChevronRight, KeyRound, Ban, Eye, LogIn } from 'lucide-react';
+import { MoreVertical, ChevronLeft, ChevronRight, KeyRound, Ban, Eye, LogIn, UserPlus, X, ShieldCheck } from 'lucide-react';
 
 const users = [
   { id: 'U001', name: '山田 太郎', email: 'yamada@techstart.co.jp', tenant: '株式会社テックスタート', agency: null, role: 'super_admin', lastLogin: '2025/05/10 09:15', status: 'active' },
@@ -25,6 +25,8 @@ export default function UsersPage() {
   const { lang } = useLang();
   const [search, setSearch] = useState('');
   const [actionMenu, setActionMenu] = useState<string | null>(null);
+  const [showInviteModal, setShowInviteModal] = useState(false);
+  const [roleModalUser, setRoleModalUser] = useState<string | null>(null);
 
   const filtered = users.filter(u =>
     u.name.toLowerCase().includes(search.toLowerCase()) ||
@@ -34,9 +36,14 @@ export default function UsersPage() {
 
   return (
     <div className="p-6">
-      <div className="mb-5">
-        <h1 className="text-xl font-bold text-gray-800">{t(lang, 'ユーザー管理', 'User Management')}</h1>
-        <p className="text-sm text-gray-500 mt-0.5">{t(lang, '全テナントのユーザーを横断管理します', 'Manage users across all tenants')}</p>
+      <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between mb-5">
+        <div>
+          <h1 className="text-xl font-bold text-gray-800">{t(lang, 'ユーザー管理', 'User Management')}</h1>
+          <p className="text-sm text-gray-500 mt-0.5">{t(lang, '全テナントのユーザーを横断管理します', 'Manage users across all tenants')}</p>
+        </div>
+        <button onClick={() => setShowInviteModal(true)} className="flex items-center gap-2 text-sm rounded-lg px-3 py-2 text-white font-medium w-fit" style={{ background: 'linear-gradient(135deg, #3b82f6, #2563eb)' }}>
+          <UserPlus size={14} />{t(lang, 'ユーザー招待', 'Invite User')}
+        </button>
       </div>
 
       <FilterBar
@@ -111,6 +118,9 @@ export default function UsersPage() {
                           <button className="flex items-center gap-2 px-3 py-2 text-xs text-gray-700 hover:bg-gray-50 w-full">
                             <Eye size={12} />{t(lang, '詳細を見る', 'View Detail')}
                           </button>
+                          <button onClick={() => { setRoleModalUser(user.id); setActionMenu(null); }} className="flex items-center gap-2 px-3 py-2 text-xs text-blue-600 hover:bg-blue-50 w-full">
+                            <ShieldCheck size={12} />{t(lang, 'ロール変更', 'Change Role')}
+                          </button>
                           {user.role === 'agency_staff' && (
                             <button className="flex items-center gap-2 px-3 py-2 text-xs text-amber-700 hover:bg-amber-50 w-full">
                               <LogIn size={12} />{t(lang, '担当テナントを確認', 'View Assigned Tenants')}
@@ -149,6 +159,74 @@ export default function UsersPage() {
       <p className="text-xs text-gray-400 mt-2">
         ※ {t(lang, '代理店スタッフは担当テナントへの「なりすましログイン」経由でのみアクセス可能です（監査ログに記録されます）', 'Agency staff access assigned tenants via impersonation only (logged in audit trail)')}
       </p>
+
+      {/* Invite User Modal */}
+      {showInviteModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-md mx-4 p-6">
+            <div className="flex items-center justify-between mb-5">
+              <h2 className="text-base font-bold text-gray-800">{t(lang, 'ユーザーを招待', 'Invite User')}</h2>
+              <button onClick={() => setShowInviteModal(false)} className="p-1 hover:bg-gray-100 rounded text-gray-400"><X size={16} /></button>
+            </div>
+            <div className="space-y-4">
+              <div>
+                <label className="text-xs font-medium text-gray-600 block mb-1">{t(lang, 'メールアドレス', 'Email')} *</label>
+                <input type="email" className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="user@example.com" />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs font-medium text-gray-600 block mb-1">{t(lang, 'ロール', 'Role')} *</label>
+                  <select className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <option value="super_admin">{t(lang, 'テナント管理者', 'Tenant Admin')}</option>
+                    <option value="support">{t(lang, 'サポート', 'Support')}</option>
+                    <option value="agency_staff">{t(lang, '代理店スタッフ', 'Agency Staff')}</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="text-xs font-medium text-gray-600 block mb-1">{t(lang, 'テナント', 'Tenant')} *</label>
+                  <select className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <option>株式会社テックスタート</option>
+                    <option>グロースSaaS株式会社</option>
+                    <option>株式会社クラウドビズ</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+            <div className="flex items-center justify-end gap-2 mt-6">
+              <button onClick={() => setShowInviteModal(false)} className="text-sm px-4 py-2 border border-gray-200 rounded-lg hover:bg-gray-50 text-gray-600">{t(lang, 'キャンセル', 'Cancel')}</button>
+              <button onClick={() => setShowInviteModal(false)} className="text-sm px-4 py-2 rounded-lg text-white font-medium" style={{ background: 'linear-gradient(135deg, #3b82f6, #2563eb)' }}>{t(lang, '招待メールを送る', 'Send Invite')}</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Change Role Modal */}
+      {roleModalUser && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm mx-4 p-6">
+            <div className="flex items-center justify-between mb-5">
+              <h2 className="text-base font-bold text-gray-800">{t(lang, 'ロールを変更', 'Change Role')}</h2>
+              <button onClick={() => setRoleModalUser(null)} className="p-1 hover:bg-gray-100 rounded text-gray-400"><X size={16} /></button>
+            </div>
+            <div className="space-y-2">
+              {[
+                { value: 'super_admin', labelJa: 'テナント管理者', labelEn: 'Tenant Admin' },
+                { value: 'support', labelJa: 'サポート', labelEn: 'Support' },
+                { value: 'agency_staff', labelJa: '代理店スタッフ', labelEn: 'Agency Staff' },
+              ].map(r => (
+                <label key={r.value} className="flex items-center gap-3 p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-blue-50 hover:border-blue-300">
+                  <input type="radio" name="role" value={r.value} className="accent-blue-600" />
+                  <span className="text-sm text-gray-700">{t(lang, r.labelJa, r.labelEn)}</span>
+                </label>
+              ))}
+            </div>
+            <div className="flex items-center justify-end gap-2 mt-6">
+              <button onClick={() => setRoleModalUser(null)} className="text-sm px-4 py-2 border border-gray-200 rounded-lg hover:bg-gray-50 text-gray-600">{t(lang, 'キャンセル', 'Cancel')}</button>
+              <button onClick={() => setRoleModalUser(null)} className="text-sm px-4 py-2 rounded-lg text-white font-medium" style={{ background: 'linear-gradient(135deg, #3b82f6, #2563eb)' }}>{t(lang, '変更する', 'Change Role')}</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
