@@ -6,7 +6,7 @@ import StatCard from '@/components/admin/StatCard';
 import { TrendingUp, Mail, Users, DollarSign } from 'lucide-react';
 import {
   LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid,
-  Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend,
+  Tooltip, ResponsiveContainer, PieChart, Pie, Cell,
 } from 'recharts';
 
 const monthlyData = [
@@ -42,7 +42,7 @@ export default function AnalyticsPage() {
         <p className="text-sm text-gray-500 mt-0.5">{t(lang, 'SaaS全体のKPIと成長トレンドを確認します', 'Review SaaS-wide KPIs and growth trends')}</p>
       </div>
 
-      <div className="grid grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         <StatCard label={t(lang, '総テナント数', 'Total Tenants')} value="48" icon={Users} color="#3b82f6" trend="+14.3% MoM" trendUp />
         <StatCard label={t(lang, '月間配信数', 'Monthly Emails')} value="124,500" icon={Mail} color="#10b981" trend="+18.6% MoM" trendUp />
         <StatCard label={t(lang, 'MRR（推定）', 'MRR (est.)')} value="¥9.2M" icon={DollarSign} color="#f59e0b" trend="+9.5% MoM" trendUp />
@@ -50,9 +50,9 @@ export default function AnalyticsPage() {
       </div>
 
       {/* Charts */}
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         {/* Tenant Growth */}
-        <div className="col-span-2 bg-white rounded-xl border border-gray-100 p-4 shadow-sm">
+        <div className="lg:col-span-2 bg-white rounded-xl border border-gray-100 p-4 shadow-sm">
           <h3 className="text-sm font-semibold text-gray-700 mb-4">{t(lang, 'テナント数・配信数の推移', 'Tenant & Email Volume Trend')}</h3>
           <ResponsiveContainer width="100%" height={200}>
             <LineChart data={monthlyData} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
@@ -111,33 +111,35 @@ export default function AnalyticsPage() {
         <div className="px-5 py-3 border-b border-gray-100">
           <h3 className="text-sm font-semibold text-gray-700">{t(lang, 'トップテナント（配信数順）', 'Top Tenants by Email Volume')}</h3>
         </div>
-        <table className="w-full">
-          <thead>
-            <tr className="bg-gray-50 border-b border-gray-100">
-              <th className="text-left text-xs font-medium text-gray-500 px-5 py-2">{t(lang, 'テナント', 'Tenant')}</th>
-              <th className="text-left text-xs font-medium text-gray-500 px-3 py-2">{t(lang, 'プラン', 'Plan')}</th>
-              <th className="text-right text-xs font-medium text-gray-500 px-3 py-2">{t(lang, '配信数', 'Emails')}</th>
-              <th className="text-right text-xs font-medium text-gray-500 px-3 py-2">{t(lang, '開封率', 'Open Rate')}</th>
-              <th className="text-right text-xs font-medium text-gray-500 px-3 py-2">MRR</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-50">
-            {topTenants.map((tenant, i) => (
-              <tr key={tenant.name} className="hover:bg-gray-50">
-                <td className="px-5 py-2.5">
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs font-bold text-gray-400 w-4">{i + 1}</span>
-                    <span className="text-sm font-medium text-blue-600">{tenant.name}</span>
-                  </div>
-                </td>
-                <td className="px-3 py-2.5 text-sm text-gray-600">{tenant.plan}</td>
-                <td className="px-3 py-2.5 text-sm text-gray-700 text-right font-medium">{tenant.emails.toLocaleString()}</td>
-                <td className="px-3 py-2.5 text-sm text-gray-700 text-right">{tenant.openRate}</td>
-                <td className="px-3 py-2.5 text-sm text-gray-700 text-right font-medium">{tenant.mrr}</td>
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[500px]">
+            <thead>
+              <tr className="bg-gray-50 border-b border-gray-100">
+                <th className="text-left text-xs font-medium text-gray-500 px-5 py-2">{t(lang, 'テナント', 'Tenant')}</th>
+                <th className="text-left text-xs font-medium text-gray-500 px-3 py-2">{t(lang, 'プラン', 'Plan')}</th>
+                <th className="text-right text-xs font-medium text-gray-500 px-3 py-2">{t(lang, '配信数', 'Emails')}</th>
+                <th className="text-right text-xs font-medium text-gray-500 px-3 py-2">{t(lang, '開封率', 'Open Rate')}</th>
+                <th className="text-right text-xs font-medium text-gray-500 px-3 py-2">MRR</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody className="divide-y divide-gray-50">
+              {topTenants.map((tenant, i) => (
+                <tr key={tenant.name} className="hover:bg-gray-50">
+                  <td className="px-5 py-2.5">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-bold text-gray-400 w-4">{i + 1}</span>
+                      <span className="text-sm font-medium text-blue-600">{tenant.name}</span>
+                    </div>
+                  </td>
+                  <td className="px-3 py-2.5 text-sm text-gray-600">{tenant.plan}</td>
+                  <td className="px-3 py-2.5 text-sm text-gray-700 text-right font-medium">{tenant.emails.toLocaleString()}</td>
+                  <td className="px-3 py-2.5 text-sm text-gray-700 text-right">{tenant.openRate}</td>
+                  <td className="px-3 py-2.5 text-sm text-gray-700 text-right font-medium">{tenant.mrr}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );

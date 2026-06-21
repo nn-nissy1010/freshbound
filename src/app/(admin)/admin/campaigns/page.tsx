@@ -35,14 +35,12 @@ export default function CampaignsPage() {
 
   return (
     <div className="p-6">
-      <div className="flex items-center justify-between mb-5">
-        <div>
-          <h1 className="text-xl font-bold text-gray-800">{t(lang, 'キャンペーン監視', 'Campaign Monitoring')}</h1>
-          <p className="text-sm text-gray-500 mt-0.5">{t(lang, '全テナントの配信キャンペーンをリアルタイム監視します', 'Real-time monitoring of all tenant campaigns')}</p>
-        </div>
+      <div className="mb-5">
+        <h1 className="text-xl font-bold text-gray-800">{t(lang, 'キャンペーン監視', 'Campaign Monitoring')}</h1>
+        <p className="text-sm text-gray-500 mt-0.5">{t(lang, '全テナントの配信キャンペーンをリアルタイム監視します', 'Real-time monitoring of all tenant campaigns')}</p>
       </div>
 
-      <div className="grid grid-cols-5 gap-3 mb-4">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 mb-4">
         <StatCard label={t(lang, '実行中', 'Running')} value="3" icon={Mail} color="#3b82f6" />
         <StatCard label={t(lang, 'キュー待機', 'Queued')} value="2,134" sub={t(lang, 'ジョブ', 'jobs')} icon={Clock} color="#f59e0b" />
         <StatCard label={t(lang, '失敗', 'Failed')} value="1" icon={AlertTriangle} color="#ef4444" />
@@ -61,61 +59,63 @@ export default function CampaignsPage() {
       />
 
       <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
-        <table className="w-full">
-          <thead>
-            <tr className="bg-gray-50 border-b border-gray-100">
-              <th className="text-left text-xs font-medium text-gray-500 px-4 py-3">{t(lang, 'キャンペーン', 'Campaign')}</th>
-              <th className="text-left text-xs font-medium text-gray-500 px-3 py-3">{t(lang, 'テナント', 'Tenant')}</th>
-              <th className="text-left text-xs font-medium text-gray-500 px-3 py-3">{t(lang, 'ステータス', 'Status')}</th>
-              <th className="text-right text-xs font-medium text-gray-500 px-3 py-3">{t(lang, '配信数', 'Sent')}</th>
-              <th className="text-right text-xs font-medium text-gray-500 px-3 py-3">{t(lang, '失敗数', 'Failed')}</th>
-              <th className="text-right text-xs font-medium text-gray-500 px-3 py-3">{t(lang, 'バウンス率', 'Bounce')}</th>
-              <th className="text-left text-xs font-medium text-gray-500 px-3 py-3">{t(lang, 'スパムリスク', 'Spam Risk')}</th>
-              <th className="text-right text-xs font-medium text-gray-500 px-3 py-3">{t(lang, 'キュー', 'Queue')}</th>
-              <th className="text-left text-xs font-medium text-gray-500 px-3 py-3">{t(lang, '開始時刻', 'Started')}</th>
-              <th className="px-3 py-3"></th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-50">
-            {filtered.map(c => {
-              const sc = spamColors[c.spamRisk] || spamColors.low;
-              return (
-                <tr key={c.id} className="hover:bg-gray-50 transition-colors">
-                  <td className="px-4 py-3">
-                    <div className="text-sm font-medium text-gray-800">{c.name}</div>
-                    <div className="text-xs text-gray-400 font-mono">{c.id}</div>
-                  </td>
-                  <td className="px-3 py-3 text-sm text-gray-600 max-w-[140px] truncate">{c.tenant}</td>
-                  <td className="px-3 py-3"><StatusBadge status={c.status} /></td>
-                  <td className="px-3 py-3 text-sm text-gray-700 text-right">{c.sent.toLocaleString()}</td>
-                  <td className="px-3 py-3 text-right">
-                    <span className={`text-sm font-medium ${c.failed > 0 ? 'text-red-600' : 'text-gray-700'}`}>{c.failed}</span>
-                  </td>
-                  <td className="px-3 py-3 text-sm text-gray-700 text-right">{c.bounceRate}</td>
-                  <td className="px-3 py-3">
-                    <span className="text-xs px-2 py-0.5 rounded-full font-medium" style={{ backgroundColor: sc.bg, color: sc.text }}>
-                      {c.spamRisk === 'low' ? t(lang, '低', 'Low') : c.spamRisk === 'medium' ? t(lang, '中', 'Medium') : t(lang, '高', 'High')}
-                    </span>
-                  </td>
-                  <td className="px-3 py-3 text-sm text-gray-700 text-right">{c.queued.toLocaleString()}</td>
-                  <td className="px-3 py-3 text-xs text-gray-400 whitespace-nowrap">{c.started}</td>
-                  <td className="px-3 py-3">
-                    <div className="flex items-center gap-1">
-                      <button className="p-1 hover:bg-gray-100 rounded text-gray-400" title={t(lang, '詳細', 'Detail')}>
-                        <Eye size={13} />
-                      </button>
-                      {c.status === 'running' && (
-                        <button className="p-1 hover:bg-red-50 rounded text-red-400" title={t(lang, '停止', 'Stop')}>
-                          <StopCircle size={13} />
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[950px]">
+            <thead>
+              <tr className="bg-gray-50 border-b border-gray-100">
+                <th className="text-left text-xs font-medium text-gray-500 px-4 py-3">{t(lang, 'キャンペーン', 'Campaign')}</th>
+                <th className="text-left text-xs font-medium text-gray-500 px-3 py-3">{t(lang, 'テナント', 'Tenant')}</th>
+                <th className="text-left text-xs font-medium text-gray-500 px-3 py-3">{t(lang, 'ステータス', 'Status')}</th>
+                <th className="text-right text-xs font-medium text-gray-500 px-3 py-3">{t(lang, '配信数', 'Sent')}</th>
+                <th className="text-right text-xs font-medium text-gray-500 px-3 py-3">{t(lang, '失敗数', 'Failed')}</th>
+                <th className="text-right text-xs font-medium text-gray-500 px-3 py-3">{t(lang, 'バウンス率', 'Bounce')}</th>
+                <th className="text-left text-xs font-medium text-gray-500 px-3 py-3">{t(lang, 'スパムリスク', 'Spam Risk')}</th>
+                <th className="text-right text-xs font-medium text-gray-500 px-3 py-3">{t(lang, 'キュー', 'Queue')}</th>
+                <th className="text-left text-xs font-medium text-gray-500 px-3 py-3">{t(lang, '開始時刻', 'Started')}</th>
+                <th className="px-3 py-3"></th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-50">
+              {filtered.map(c => {
+                const sc = spamColors[c.spamRisk] || spamColors.low;
+                return (
+                  <tr key={c.id} className="hover:bg-gray-50 transition-colors">
+                    <td className="px-4 py-3">
+                      <div className="text-sm font-medium text-gray-800">{c.name}</div>
+                      <div className="text-xs text-gray-400 font-mono">{c.id}</div>
+                    </td>
+                    <td className="px-3 py-3 text-sm text-gray-600 max-w-[140px] truncate">{c.tenant}</td>
+                    <td className="px-3 py-3"><StatusBadge status={c.status} /></td>
+                    <td className="px-3 py-3 text-sm text-gray-700 text-right">{c.sent.toLocaleString()}</td>
+                    <td className="px-3 py-3 text-right">
+                      <span className={`text-sm font-medium ${c.failed > 0 ? 'text-red-600' : 'text-gray-700'}`}>{c.failed}</span>
+                    </td>
+                    <td className="px-3 py-3 text-sm text-gray-700 text-right">{c.bounceRate}</td>
+                    <td className="px-3 py-3">
+                      <span className="text-xs px-2 py-0.5 rounded-full font-medium" style={{ backgroundColor: sc.bg, color: sc.text }}>
+                        {c.spamRisk === 'low' ? t(lang, '低', 'Low') : c.spamRisk === 'medium' ? t(lang, '中', 'Medium') : t(lang, '高', 'High')}
+                      </span>
+                    </td>
+                    <td className="px-3 py-3 text-sm text-gray-700 text-right">{c.queued.toLocaleString()}</td>
+                    <td className="px-3 py-3 text-xs text-gray-400 whitespace-nowrap">{c.started}</td>
+                    <td className="px-3 py-3">
+                      <div className="flex items-center gap-1">
+                        <button className="p-1 hover:bg-gray-100 rounded text-gray-400" title={t(lang, '詳細', 'Detail')}>
+                          <Eye size={13} />
                         </button>
-                      )}
-                    </div>
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
+                        {c.status === 'running' && (
+                          <button className="p-1 hover:bg-red-50 rounded text-red-400" title={t(lang, '停止', 'Stop')}>
+                            <StopCircle size={13} />
+                          </button>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );

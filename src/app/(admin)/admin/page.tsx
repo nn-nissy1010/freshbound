@@ -91,7 +91,7 @@ export default function AdminDashboard() {
     <div className="p-6 space-y-4 bg-gray-50 min-h-screen">
 
       {/* ── Header ── */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
         <div>
           <h1 className="text-xl font-bold text-gray-800 flex items-center gap-2">
             {t(lang, 'ダッシュボード', 'Dashboard')}
@@ -101,11 +101,11 @@ export default function AdminDashboard() {
             {t(lang, 'システム全体の状況をリアルタイムで監視できます。', 'Monitor the entire system status in real time.')}
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           <button className="flex items-center gap-1.5 text-sm border border-gray-200 rounded-lg px-3 py-2 bg-white hover:bg-gray-50 text-gray-600">
             <Calendar size={13} /> 2025/05/10 <ChevronDown size={12} />
           </button>
-          <button className="flex items-center gap-1.5 text-sm border border-gray-200 rounded-lg px-3 py-2 bg-white hover:bg-gray-50 text-gray-600">
+          <button className="hidden sm:flex items-center gap-1.5 text-sm border border-gray-200 rounded-lg px-3 py-2 bg-white hover:bg-gray-50 text-gray-600">
             {t(lang, '比較：前日', 'Compare: Yesterday')} <ChevronDown size={12} />
           </button>
           <button className="flex items-center gap-1.5 text-sm border border-gray-200 rounded-lg px-3 py-2 bg-white hover:bg-gray-50 text-gray-600">
@@ -115,7 +115,7 @@ export default function AdminDashboard() {
       </div>
 
       {/* ── Row 1: 6 KPI cards ── */}
-      <div className="grid grid-cols-6 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
         {/* テナント総数 */}
         <div className="bg-white rounded-xl border border-gray-100 p-4 shadow-sm">
           <div className="flex items-center gap-2 mb-2">
@@ -190,7 +190,7 @@ export default function AdminDashboard() {
       </div>
 
       {/* ── Row 2: 5 secondary cards ── */}
-      <div className="grid grid-cols-5 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
         {/* API使用量 */}
         <div className="bg-white rounded-xl border border-gray-100 p-4 shadow-sm col-span-1">
           <div className="text-xs text-gray-500 mb-1">{t(lang, 'API使用量（本日）', 'API Usage (Today)')}</div>
@@ -239,7 +239,7 @@ export default function AdminDashboard() {
       </div>
 
       {/* ── Row 3: 3 Charts ── */}
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
 
         {/* 送信数の推移 */}
         <div className="bg-white rounded-xl border border-gray-100 p-4 shadow-sm">
@@ -337,7 +337,7 @@ export default function AdminDashboard() {
       </div>
 
       {/* ── Row 4: 3 Tables ── */}
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
 
         {/* テナントアクティビティ */}
         <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
@@ -348,7 +348,8 @@ export default function AdminDashboard() {
             </h3>
             <a href="/admin/tenants" className="text-xs text-blue-600 hover:text-blue-700">{t(lang, 'すべて見る', 'View all')}</a>
           </div>
-          <table className="w-full">
+          <div className="overflow-x-auto">
+          <table className="w-full min-w-[400px]">
             <thead>
               <tr className="bg-gray-50 border-b border-gray-100">
                 <th className="text-left text-xs font-medium text-gray-500 px-4 py-2">{t(lang, 'テナント名', 'Tenant')}</th>
@@ -373,6 +374,7 @@ export default function AdminDashboard() {
               })}
             </tbody>
           </table>
+          </div>
         </div>
 
         {/* エラー・失敗ジョブ */}
@@ -384,7 +386,8 @@ export default function AdminDashboard() {
             </h3>
             <a href="/admin/campaigns" className="text-xs text-blue-600 hover:text-blue-700">{t(lang, 'すべて見る', 'View all')}</a>
           </div>
-          <table className="w-full">
+          <div className="overflow-x-auto">
+          <table className="w-full min-w-[400px]">
             <thead>
               <tr className="bg-gray-50 border-b border-gray-100">
                 <th className="text-left text-xs font-medium text-gray-500 px-4 py-2">{t(lang, '種別', 'Type')}</th>
@@ -408,6 +411,7 @@ export default function AdminDashboard() {
               ))}
             </tbody>
           </table>
+          </div>
         </div>
 
         {/* CSVインポート */}
@@ -419,7 +423,8 @@ export default function AdminDashboard() {
             </h3>
             <a href="/admin/csv" className="text-xs text-blue-600 hover:text-blue-700">{t(lang, 'すべて見る', 'View all')}</a>
           </div>
-          <table className="w-full">
+          <div className="overflow-x-auto">
+          <table className="w-full min-w-[480px]">
             <thead>
               <tr className="bg-gray-50 border-b border-gray-100">
                 <th className="text-left text-xs font-medium text-gray-500 px-4 py-2">{t(lang, 'テナント名', 'Tenant')}</th>
@@ -446,6 +451,7 @@ export default function AdminDashboard() {
               })}
             </tbody>
           </table>
+          </div>
         </div>
       </div>
 

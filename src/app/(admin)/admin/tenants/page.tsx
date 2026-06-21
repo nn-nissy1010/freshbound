@@ -33,12 +33,12 @@ export default function TenantsPage() {
 
   return (
     <div className="p-6">
-      <div className="flex items-center justify-between mb-5">
+      <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between mb-5">
         <div>
           <h1 className="text-xl font-bold text-gray-800">{t(lang, 'テナント管理', 'Tenant Management')}</h1>
           <p className="text-sm text-gray-500 mt-0.5">{t(lang, '全テナントの管理・監視・操作を行います', 'Manage, monitor and operate all tenants')}</p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           <button className="flex items-center gap-2 text-sm border border-gray-200 rounded-lg px-3 py-2 bg-white hover:bg-gray-50 text-gray-600">
             <Download size={14} />{t(lang, 'エクスポート', 'Export')}
           </button>
@@ -50,7 +50,7 @@ export default function TenantsPage() {
       </div>
 
       {/* Summary */}
-      <div className="grid grid-cols-4 gap-3 mb-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
         {[
           { label: t(lang, '総テナント', 'Total'), value: '48', color: '#3b82f6' },
           { label: t(lang, 'アクティブ', 'Active'), value: '44', color: '#10b981' },
@@ -75,79 +75,83 @@ export default function TenantsPage() {
       />
 
       <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
-        <table className="w-full">
-          <thead>
-            <tr className="bg-gray-50 border-b border-gray-100">
-              <th className="text-left text-xs font-medium text-gray-500 px-4 py-3">{t(lang, '企業名', 'Company')}</th>
-              <th className="text-left text-xs font-medium text-gray-500 px-3 py-3">{t(lang, 'プラン', 'Plan')}</th>
-              <th className="text-right text-xs font-medium text-gray-500 px-3 py-3">{t(lang, 'ユーザー数', 'Users')}</th>
-              <th className="text-left text-xs font-medium text-gray-500 px-3 py-3">{t(lang, 'ステータス', 'Status')}</th>
-              <th className="text-right text-xs font-medium text-gray-500 px-3 py-3">{t(lang, '配信数', 'Emails Sent')}</th>
-              <th className="text-left text-xs font-medium text-gray-500 px-3 py-3">{t(lang, '作成日', 'Created')}</th>
-              <th className="text-left text-xs font-medium text-gray-500 px-3 py-3">{t(lang, '最終活動', 'Last Active')}</th>
-              <th className="text-left text-xs font-medium text-gray-500 px-3 py-3">{t(lang, '代理店', 'Reseller')}</th>
-              <th className="px-3 py-3"></th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-50">
-            {filtered.map(tenant => (
-              <tr key={tenant.id} className="hover:bg-gray-50 transition-colors">
-                <td className="px-4 py-3">
-                  <div>
-                    <a href={`/admin/tenants/${tenant.id}`} className="text-sm font-medium text-blue-600 hover:text-blue-700">{tenant.name}</a>
-                    <div className="text-xs text-gray-400 font-mono">{tenant.id}</div>
-                  </div>
-                </td>
-                <td className="px-3 py-3"><StatusBadge status={tenant.plan} /></td>
-                <td className="px-3 py-3 text-sm text-gray-700 text-right">{tenant.users}</td>
-                <td className="px-3 py-3"><StatusBadge status={tenant.status} /></td>
-                <td className="px-3 py-3 text-sm text-gray-700 text-right">{tenant.emailsSent.toLocaleString()}</td>
-                <td className="px-3 py-3 text-xs text-gray-500">{tenant.created}</td>
-                <td className="px-3 py-3 text-xs text-gray-500">{tenant.lastActive}</td>
-                <td className="px-3 py-3 text-xs text-gray-500">{tenant.reseller}</td>
-                <td className="px-3 py-3">
-                  <div className="relative">
-                    <button
-                      onClick={() => setActionMenu(actionMenu === tenant.id ? null : tenant.id)}
-                      className="p-1 hover:bg-gray-100 rounded text-gray-400"
-                    >
-                      <MoreVertical size={14} />
-                    </button>
-                    {actionMenu === tenant.id && (
-                      <div className="absolute right-0 top-7 z-10 bg-white border border-gray-200 rounded-lg shadow-lg py-1 w-44">
-                        <a href={`/admin/tenants/${tenant.id}`} className="flex items-center gap-2 px-3 py-2 text-xs text-gray-700 hover:bg-gray-50">
-                          <Eye size={12} />{t(lang, '詳細を見る', 'View Detail')}
-                        </a>
-                        <button className="flex items-center gap-2 px-3 py-2 text-xs text-gray-700 hover:bg-gray-50 w-full">
-                          <UserCheck size={12} />{t(lang, 'なりすまし', 'Impersonate')}
-                        </button>
-                        <button className="flex items-center gap-2 px-3 py-2 text-xs text-gray-700 hover:bg-gray-50 w-full">
-                          <TrendingUp size={12} />{t(lang, 'プランアップグレード', 'Upgrade Plan')}
-                        </button>
-                        <button className="flex items-center gap-2 px-3 py-2 text-xs text-gray-700 hover:bg-gray-50 w-full">
-                          <RefreshCw size={12} />{t(lang, 'クォータリセット', 'Reset Quota')}
-                        </button>
-                        <div className="border-t border-gray-100 my-1" />
-                        <button className="flex items-center gap-2 px-3 py-2 text-xs text-red-600 hover:bg-red-50 w-full">
-                          <Ban size={12} />{t(lang, '停止する', 'Suspend')}
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                </td>
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[900px]">
+            <thead>
+              <tr className="bg-gray-50 border-b border-gray-100">
+                <th className="text-left text-xs font-medium text-gray-500 px-4 py-3">{t(lang, '企業名', 'Company')}</th>
+                <th className="text-left text-xs font-medium text-gray-500 px-3 py-3">{t(lang, 'プラン', 'Plan')}</th>
+                <th className="text-right text-xs font-medium text-gray-500 px-3 py-3">{t(lang, 'ユーザー数', 'Users')}</th>
+                <th className="text-left text-xs font-medium text-gray-500 px-3 py-3">{t(lang, 'ステータス', 'Status')}</th>
+                <th className="text-right text-xs font-medium text-gray-500 px-3 py-3">{t(lang, '配信数', 'Emails Sent')}</th>
+                <th className="text-left text-xs font-medium text-gray-500 px-3 py-3">{t(lang, '作成日', 'Created')}</th>
+                <th className="text-left text-xs font-medium text-gray-500 px-3 py-3">{t(lang, '最終活動', 'Last Active')}</th>
+                <th className="text-left text-xs font-medium text-gray-500 px-3 py-3">{t(lang, '代理店', 'Reseller')}</th>
+                <th className="px-3 py-3"></th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody className="divide-y divide-gray-50">
+              {filtered.map(tenant => (
+                <tr key={tenant.id} className="hover:bg-gray-50 transition-colors">
+                  <td className="px-4 py-3">
+                    <div>
+                      <a href={`/admin/tenants/${tenant.id}`} className="text-sm font-medium text-blue-600 hover:text-blue-700">{tenant.name}</a>
+                      <div className="text-xs text-gray-400 font-mono">{tenant.id}</div>
+                    </div>
+                  </td>
+                  <td className="px-3 py-3"><StatusBadge status={tenant.plan} /></td>
+                  <td className="px-3 py-3 text-sm text-gray-700 text-right">{tenant.users}</td>
+                  <td className="px-3 py-3"><StatusBadge status={tenant.status} /></td>
+                  <td className="px-3 py-3 text-sm text-gray-700 text-right">{tenant.emailsSent.toLocaleString()}</td>
+                  <td className="px-3 py-3 text-xs text-gray-500">{tenant.created}</td>
+                  <td className="px-3 py-3 text-xs text-gray-500">{tenant.lastActive}</td>
+                  <td className="px-3 py-3 text-xs text-gray-500">{tenant.reseller}</td>
+                  <td className="px-3 py-3">
+                    <div className="relative">
+                      <button
+                        onClick={() => setActionMenu(actionMenu === tenant.id ? null : tenant.id)}
+                        className="p-1 hover:bg-gray-100 rounded text-gray-400"
+                      >
+                        <MoreVertical size={14} />
+                      </button>
+                      {actionMenu === tenant.id && (
+                        <div className="absolute right-0 top-7 z-10 bg-white border border-gray-200 rounded-lg shadow-lg py-1 w-44">
+                          <a href={`/admin/tenants/${tenant.id}`} className="flex items-center gap-2 px-3 py-2 text-xs text-gray-700 hover:bg-gray-50">
+                            <Eye size={12} />{t(lang, '詳細を見る', 'View Detail')}
+                          </a>
+                          <button className="flex items-center gap-2 px-3 py-2 text-xs text-gray-700 hover:bg-gray-50 w-full">
+                            <UserCheck size={12} />{t(lang, 'なりすまし', 'Impersonate')}
+                          </button>
+                          <button className="flex items-center gap-2 px-3 py-2 text-xs text-gray-700 hover:bg-gray-50 w-full">
+                            <TrendingUp size={12} />{t(lang, 'プランアップグレード', 'Upgrade Plan')}
+                          </button>
+                          <button className="flex items-center gap-2 px-3 py-2 text-xs text-gray-700 hover:bg-gray-50 w-full">
+                            <RefreshCw size={12} />{t(lang, 'クォータリセット', 'Reset Quota')}
+                          </button>
+                          <div className="border-t border-gray-100 my-1" />
+                          <button className="flex items-center gap-2 px-3 py-2 text-xs text-red-600 hover:bg-red-50 w-full">
+                            <Ban size={12} />{t(lang, '停止する', 'Suspend')}
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
 
       <div className="flex items-center justify-between mt-3 text-xs text-gray-500">
         <span>{t(lang, `${filtered.length}件表示`, `Showing ${filtered.length} results`)}</span>
         <div className="flex items-center gap-1">
           <button className="p-1 border border-gray-200 rounded hover:bg-gray-50"><ChevronLeft size={14} /></button>
-          {[1,2,3].map(p => (
-            <button key={p} className={`w-7 h-7 rounded text-xs ${p === 1 ? 'bg-blue-600 text-white' : 'border border-gray-200 hover:bg-gray-50 text-gray-600'}`}>{p}</button>
-          ))}
+          <div className="hidden sm:flex gap-1">
+            {[1,2,3].map(p => (
+              <button key={p} className={`w-7 h-7 rounded text-xs ${p === 1 ? 'bg-blue-600 text-white' : 'border border-gray-200 hover:bg-gray-50 text-gray-600'}`}>{p}</button>
+            ))}
+          </div>
           <button className="p-1 border border-gray-200 rounded hover:bg-gray-50"><ChevronRight size={14} /></button>
         </div>
       </div>

@@ -4,7 +4,7 @@ import { useLang } from '@/components/admin/LangContext';
 import { t } from '@/lib/i18n';
 import StatusBadge from '@/components/admin/StatusBadge';
 import { RefreshCw, AlertTriangle, CheckCircle, Clock } from 'lucide-react';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
 const latencyData = [
   { time: '09:00', sendgrid: 42, openai: 310, musubu: 890, hunter: 85 },
@@ -110,12 +110,12 @@ export default function APIMonitorPage() {
 
   return (
     <div className="p-6 space-y-5">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
         <div>
           <h1 className="text-xl font-bold text-gray-800">{t(lang, 'API・外部サービス監視', 'API & External Service Monitor')}</h1>
           <p className="text-sm text-gray-500 mt-0.5">{t(lang, '依存する全APIの稼働状況・使用量・レイテンシを監視します', 'Monitor uptime, usage and latency of all dependent APIs')}</p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           {degradedCount > 0 && (
             <div className="flex items-center gap-1.5 text-xs text-yellow-600 bg-yellow-50 border border-yellow-200 rounded-lg px-3 py-1.5">
               <AlertTriangle size={13} />
@@ -135,7 +135,7 @@ export default function APIMonitorPage() {
       </div>
 
       {/* Summary */}
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         <div className="bg-white rounded-xl border border-gray-100 p-4 shadow-sm flex items-center gap-3">
           <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center">
             <CheckCircle size={20} className="text-green-600" />
@@ -166,7 +166,7 @@ export default function APIMonitorPage() {
       </div>
 
       {/* Service Cards */}
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {services.map(svc => (
           <div key={svc.name} className={`bg-white rounded-xl border shadow-sm p-4 ${svc.status === 'degraded' ? 'border-yellow-200' : svc.status === 'down' ? 'border-red-200' : 'border-gray-100'}`}>
             <div className="flex items-center justify-between mb-3">
@@ -232,7 +232,7 @@ export default function APIMonitorPage() {
             <Line type="monotone" dataKey="hunter" stroke="#8b5cf6" strokeWidth={2} dot={false} name="Hunter.io" />
           </LineChart>
         </ResponsiveContainer>
-        <div className="flex items-center gap-4 mt-2 justify-center">
+        <div className="flex items-center gap-4 mt-2 justify-center flex-wrap">
           {[
             { label: 'SendGrid', color: '#3b82f6' },
             { label: 'OpenAI', color: '#10b981' },

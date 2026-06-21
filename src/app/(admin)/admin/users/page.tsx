@@ -34,11 +34,9 @@ export default function UsersPage() {
 
   return (
     <div className="p-6">
-      <div className="flex items-center justify-between mb-5">
-        <div>
-          <h1 className="text-xl font-bold text-gray-800">{t(lang, 'ユーザー管理', 'User Management')}</h1>
-          <p className="text-sm text-gray-500 mt-0.5">{t(lang, '全テナントのユーザーを横断管理します', 'Manage users across all tenants')}</p>
-        </div>
+      <div className="mb-5">
+        <h1 className="text-xl font-bold text-gray-800">{t(lang, 'ユーザー管理', 'User Management')}</h1>
+        <p className="text-sm text-gray-500 mt-0.5">{t(lang, '全テナントのユーザーを横断管理します', 'Manage users across all tenants')}</p>
       </div>
 
       <FilterBar
@@ -52,95 +50,99 @@ export default function UsersPage() {
       />
 
       <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
-        <table className="w-full">
-          <thead>
-            <tr className="bg-gray-50 border-b border-gray-100">
-              <th className="text-left text-xs font-medium text-gray-500 px-4 py-3">{t(lang, 'ユーザー', 'User')}</th>
-              <th className="text-left text-xs font-medium text-gray-500 px-3 py-3">{t(lang, 'テナント / 代理店', 'Tenant / Agency')}</th>
-              <th className="text-left text-xs font-medium text-gray-500 px-3 py-3">{t(lang, 'ロール', 'Role')}</th>
-              <th className="text-left text-xs font-medium text-gray-500 px-3 py-3">{t(lang, '最終ログイン', 'Last Login')}</th>
-              <th className="text-left text-xs font-medium text-gray-500 px-3 py-3">{t(lang, 'ステータス', 'Status')}</th>
-              <th className="px-3 py-3"></th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-50">
-            {filtered.map(user => (
-              <tr key={user.id} className="hover:bg-gray-50 transition-colors">
-                <td className="px-4 py-3">
-                  <div className="flex items-center gap-2.5">
-                    <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
-                      {user.name[0]}
-                    </div>
-                    <div>
-                      <div className="text-sm font-medium text-gray-800">{user.name}</div>
-                      <div className="text-xs text-gray-400">{user.email}</div>
-                    </div>
-                  </div>
-                </td>
-                <td className="px-3 py-3">
-                  {user.role === 'agency_staff' ? (
-                    <div>
-                      <div className="text-xs font-medium text-amber-700">{user.agency}</div>
-                      <div className="text-xs text-gray-400">{t(lang, '代理店アカウント', 'Agency account')}</div>
-                    </div>
-                  ) : (
-                    <span className="text-sm text-gray-600">{user.tenant}</span>
-                  )}
-                </td>
-                <td className="px-3 py-3">
-                  {user.role === 'agency_staff' ? (
-                    <StatusBadge status="agency_staff" label={t(lang, '代理店スタッフ', 'Agency Staff')} />
-                  ) : (
-                    <StatusBadge
-                      status={user.role === 'super_admin' ? 'tenant_admin' : 'support'}
-                      label={user.role === 'super_admin' ? t(lang, 'テナント管理者', 'Tenant Admin') : t(lang, 'サポート', 'Support')}
-                    />
-                  )}
-                </td>
-                <td className="px-3 py-3 text-xs text-gray-500">{user.lastLogin}</td>
-                <td className="px-3 py-3"><StatusBadge status={user.status} /></td>
-                <td className="px-3 py-3">
-                  <div className="relative">
-                    <button
-                      onClick={() => setActionMenu(actionMenu === user.id ? null : user.id)}
-                      className="p-1 hover:bg-gray-100 rounded text-gray-400"
-                    >
-                      <MoreVertical size={14} />
-                    </button>
-                    {actionMenu === user.id && (
-                      <div className="absolute right-0 top-7 z-10 bg-white border border-gray-200 rounded-lg shadow-lg py-1 w-48">
-                        <button className="flex items-center gap-2 px-3 py-2 text-xs text-gray-700 hover:bg-gray-50 w-full">
-                          <Eye size={12} />{t(lang, '詳細を見る', 'View Detail')}
-                        </button>
-                        {user.role === 'agency_staff' && (
-                          <button className="flex items-center gap-2 px-3 py-2 text-xs text-amber-700 hover:bg-amber-50 w-full">
-                            <LogIn size={12} />{t(lang, '担当テナントを確認', 'View Assigned Tenants')}
-                          </button>
-                        )}
-                        <button className="flex items-center gap-2 px-3 py-2 text-xs text-gray-700 hover:bg-gray-50 w-full">
-                          <KeyRound size={12} />{t(lang, 'パスワードリセット', 'Reset Password')}
-                        </button>
-                        <div className="border-t border-gray-100 my-1" />
-                        <button className="flex items-center gap-2 px-3 py-2 text-xs text-red-600 hover:bg-red-50 w-full">
-                          <Ban size={12} />{t(lang, 'ユーザー停止', 'Suspend User')}
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                </td>
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[700px]">
+            <thead>
+              <tr className="bg-gray-50 border-b border-gray-100">
+                <th className="text-left text-xs font-medium text-gray-500 px-4 py-3">{t(lang, 'ユーザー', 'User')}</th>
+                <th className="text-left text-xs font-medium text-gray-500 px-3 py-3">{t(lang, 'テナント / 代理店', 'Tenant / Agency')}</th>
+                <th className="text-left text-xs font-medium text-gray-500 px-3 py-3">{t(lang, 'ロール', 'Role')}</th>
+                <th className="text-left text-xs font-medium text-gray-500 px-3 py-3">{t(lang, '最終ログイン', 'Last Login')}</th>
+                <th className="text-left text-xs font-medium text-gray-500 px-3 py-3">{t(lang, 'ステータス', 'Status')}</th>
+                <th className="px-3 py-3"></th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody className="divide-y divide-gray-50">
+              {filtered.map(user => (
+                <tr key={user.id} className="hover:bg-gray-50 transition-colors">
+                  <td className="px-4 py-3">
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
+                        {user.name[0]}
+                      </div>
+                      <div>
+                        <div className="text-sm font-medium text-gray-800">{user.name}</div>
+                        <div className="text-xs text-gray-400">{user.email}</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td className="px-3 py-3">
+                    {user.role === 'agency_staff' ? (
+                      <div>
+                        <div className="text-xs font-medium text-amber-700">{user.agency}</div>
+                        <div className="text-xs text-gray-400">{t(lang, '代理店アカウント', 'Agency account')}</div>
+                      </div>
+                    ) : (
+                      <span className="text-sm text-gray-600">{user.tenant}</span>
+                    )}
+                  </td>
+                  <td className="px-3 py-3">
+                    {user.role === 'agency_staff' ? (
+                      <StatusBadge status="agency_staff" label={t(lang, '代理店スタッフ', 'Agency Staff')} />
+                    ) : (
+                      <StatusBadge
+                        status={user.role === 'super_admin' ? 'tenant_admin' : 'support'}
+                        label={user.role === 'super_admin' ? t(lang, 'テナント管理者', 'Tenant Admin') : t(lang, 'サポート', 'Support')}
+                      />
+                    )}
+                  </td>
+                  <td className="px-3 py-3 text-xs text-gray-500">{user.lastLogin}</td>
+                  <td className="px-3 py-3"><StatusBadge status={user.status} /></td>
+                  <td className="px-3 py-3">
+                    <div className="relative">
+                      <button
+                        onClick={() => setActionMenu(actionMenu === user.id ? null : user.id)}
+                        className="p-1 hover:bg-gray-100 rounded text-gray-400"
+                      >
+                        <MoreVertical size={14} />
+                      </button>
+                      {actionMenu === user.id && (
+                        <div className="absolute right-0 top-7 z-10 bg-white border border-gray-200 rounded-lg shadow-lg py-1 w-48">
+                          <button className="flex items-center gap-2 px-3 py-2 text-xs text-gray-700 hover:bg-gray-50 w-full">
+                            <Eye size={12} />{t(lang, '詳細を見る', 'View Detail')}
+                          </button>
+                          {user.role === 'agency_staff' && (
+                            <button className="flex items-center gap-2 px-3 py-2 text-xs text-amber-700 hover:bg-amber-50 w-full">
+                              <LogIn size={12} />{t(lang, '担当テナントを確認', 'View Assigned Tenants')}
+                            </button>
+                          )}
+                          <button className="flex items-center gap-2 px-3 py-2 text-xs text-gray-700 hover:bg-gray-50 w-full">
+                            <KeyRound size={12} />{t(lang, 'パスワードリセット', 'Reset Password')}
+                          </button>
+                          <div className="border-t border-gray-100 my-1" />
+                          <button className="flex items-center gap-2 px-3 py-2 text-xs text-red-600 hover:bg-red-50 w-full">
+                            <Ban size={12} />{t(lang, 'ユーザー停止', 'Suspend User')}
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
 
       <div className="flex items-center justify-between mt-3 text-xs text-gray-500">
         <span>{t(lang, `${filtered.length}件表示`, `Showing ${filtered.length} results`)}</span>
         <div className="flex items-center gap-1">
           <button className="p-1 border border-gray-200 rounded hover:bg-gray-50"><ChevronLeft size={14} /></button>
-          {[1,2,3].map(p => (
-            <button key={p} className={`w-7 h-7 rounded text-xs ${p === 1 ? 'bg-blue-600 text-white' : 'border border-gray-200 hover:bg-gray-50 text-gray-600'}`}>{p}</button>
-          ))}
+          <div className="hidden sm:flex gap-1">
+            {[1,2,3].map(p => (
+              <button key={p} className={`w-7 h-7 rounded text-xs ${p === 1 ? 'bg-blue-600 text-white' : 'border border-gray-200 hover:bg-gray-50 text-gray-600'}`}>{p}</button>
+            ))}
+          </div>
           <button className="p-1 border border-gray-200 rounded hover:bg-gray-50"><ChevronRight size={14} /></button>
         </div>
       </div>

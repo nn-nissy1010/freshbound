@@ -58,34 +58,36 @@ export default function SystemSettingsPage() {
         <p className="text-sm text-gray-500 mt-0.5">{t(lang, 'グローバル設定・API接続・フィーチャーフラグを管理します', 'Manage global config, API connections and feature flags')}</p>
       </div>
 
-      <div className="flex gap-5">
+      <div className="flex flex-col md:flex-row gap-5">
         {/* Sidebar */}
-        <div className="w-52 flex-shrink-0">
+        <div className="w-full md:w-52 flex-shrink-0">
           <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
-            {sections.map(s => {
-              const Icon = s.icon;
-              return (
-                <button
-                  key={s.id}
-                  onClick={() => setActiveSection(s.id)}
-                  className={`w-full flex items-center gap-2.5 px-4 py-3 text-sm transition-colors border-b border-gray-50 last:border-0 ${
-                    activeSection === s.id ? 'bg-blue-50 text-blue-600 font-medium' : 'text-gray-600 hover:bg-gray-50'
-                  }`}
-                >
-                  <Icon size={14} />
-                  {t(lang, s.labelJa, s.labelEn)}
-                </button>
-              );
-            })}
+            <div className="flex md:flex-col overflow-x-auto md:overflow-x-visible">
+              {sections.map(s => {
+                const Icon = s.icon;
+                return (
+                  <button
+                    key={s.id}
+                    onClick={() => setActiveSection(s.id)}
+                    className={`flex items-center gap-2.5 px-4 py-3 text-sm transition-colors border-r md:border-r-0 md:border-b border-gray-50 last:border-0 whitespace-nowrap md:w-full ${
+                      activeSection === s.id ? 'bg-blue-50 text-blue-600 font-medium' : 'text-gray-600 hover:bg-gray-50'
+                    }`}
+                  >
+                    <Icon size={14} className="flex-shrink-0" />
+                    {t(lang, s.labelJa, s.labelEn)}
+                  </button>
+                );
+              })}
+            </div>
           </div>
         </div>
 
         {/* Content */}
-        <div className="flex-1">
+        <div className="flex-1 min-w-0">
           {activeSection === 'smtp' && (
             <div className="bg-white rounded-xl border border-gray-100 p-5 shadow-sm">
               <h2 className="text-sm font-bold text-gray-800 mb-4">{t(lang, 'SMTP設定', 'SMTP Settings')}</h2>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {[
                   { label: t(lang, 'SMTPホスト', 'SMTP Host'), value: 'smtp.sendgrid.net' },
                   { label: t(lang, 'SMTPポート', 'SMTP Port'), value: '587' },
@@ -95,7 +97,7 @@ export default function SystemSettingsPage() {
                   { label: t(lang, '送信者住所（デフォルト）', 'Default Sender Address'), value: '東京都渋谷区神宮前1-1-1', full: true },
                   { label: t(lang, '送信者メール（デフォルト）', 'Default From Email'), value: 'noreply@ai-outbound.jp', full: true },
                 ].map(f => (
-                  <div key={f.label} className={f.full ? 'col-span-2' : ''}>
+                  <div key={f.label} className={f.full ? 'sm:col-span-2' : ''}>
                     <label className="block text-xs font-medium text-gray-600 mb-1.5">{f.label}</label>
                     <input type={f.type || 'text'} defaultValue={f.value}
                       className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500" />
@@ -175,7 +177,7 @@ export default function SystemSettingsPage() {
           {activeSection === 'queue' && (
             <div className="bg-white rounded-xl border border-gray-100 p-5 shadow-sm">
               <h2 className="text-sm font-bold text-gray-800 mb-4">{t(lang, 'キュー設定', 'Queue Settings')}</h2>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {[
                   { label: t(lang, '最大同時ワーカー数', 'Max Concurrent Workers'), value: '5' },
                   { label: t(lang, 'ジョブタイムアウト（秒）', 'Job Timeout (sec)'), value: '300' },

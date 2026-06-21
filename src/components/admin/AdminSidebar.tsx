@@ -8,7 +8,7 @@ import { t } from '@/lib/i18n';
 import {
   LayoutDashboard, Building2, Users, Mail, FileText,
   Ban, Plug, BarChart2, Settings, Shield, ChevronDown,
-  ChevronRight, Globe, Store,
+  ChevronRight, Globe, Store, X,
 } from 'lucide-react';
 
 interface NavItem {
@@ -17,6 +17,11 @@ interface NavItem {
   labelEn: string;
   icon: React.ElementType;
   children?: { href: string; labelJa: string; labelEn: string }[];
+}
+
+interface SidebarProps {
+  isOpen: boolean;
+  onClose: () => void;
 }
 
 const navItems: NavItem[] = [
@@ -44,7 +49,7 @@ const navItems: NavItem[] = [
   { href: '/admin/audit', labelJa: '監査ログ', labelEn: 'Audit Logs', icon: Shield },
 ];
 
-export default function AdminSidebar() {
+export default function AdminSidebar({ isOpen, onClose }: SidebarProps) {
   const pathname = usePathname();
   const { lang, setLang } = useLang();
   const [openGroups, setOpenGroups] = useState<string[]>(['テナント管理', 'Tenants', '配信監視', 'Delivery']);
@@ -54,21 +59,35 @@ export default function AdminSidebar() {
   };
 
   return (
-    <aside className="flex flex-col w-56 min-h-screen text-white flex-shrink-0" style={{ backgroundColor: '#0f1629' }}>
+    <aside
+      className={`flex flex-col w-56 min-h-screen text-white flex-shrink-0
+        fixed top-0 bottom-0 left-0 z-50 transition-transform duration-300 ease-in-out overflow-y-auto
+        md:sticky md:top-0 md:bottom-auto md:left-auto md:z-auto md:translate-x-0
+        ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}
+      style={{ backgroundColor: '#0f1629' }}
+    >
       {/* Logo */}
-      <div className="flex items-center gap-2 px-4 py-5 border-b border-white/10">
-        <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0"
-          style={{ background: 'linear-gradient(135deg, #ef4444, #b91c1c)' }}>
-          <Shield size={16} className="text-white" />
+      <div className="flex items-center justify-between px-4 py-5 border-b border-white/10 flex-shrink-0">
+        <div className="flex items-center gap-2">
+          <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0"
+            style={{ background: 'linear-gradient(135deg, #ef4444, #b91c1c)' }}>
+            <Shield size={16} className="text-white" />
+          </div>
+          <div>
+            <div className="text-sm font-bold leading-tight">Admin Panel</div>
+            <div className="text-xs text-red-300 leading-tight">Control Tower</div>
+          </div>
         </div>
-        <div>
-          <div className="text-sm font-bold leading-tight">Admin Panel</div>
-          <div className="text-xs text-red-300 leading-tight">Control Tower</div>
-        </div>
+        <button
+          onClick={onClose}
+          className="md:hidden p-1 rounded hover:bg-white/10 text-gray-400 hover:text-white"
+        >
+          <X size={16} />
+        </button>
       </div>
 
       {/* Lang Toggle */}
-      <div className="px-3 pt-3 pb-1">
+      <div className="px-3 pt-3 pb-1 flex-shrink-0">
         <div className="flex rounded-lg overflow-hidden border border-white/10 text-xs">
           <button
             onClick={() => setLang('ja')}
@@ -115,6 +134,7 @@ export default function AdminSidebar() {
                         <Link
                           key={child.href}
                           href={child.href}
+                          onClick={onClose}
                           className={`flex items-center px-3 py-2 rounded-lg mb-0.5 text-xs transition-all ${
                             isActive ? 'bg-blue-600 text-white font-medium' : 'text-gray-400 hover:bg-white/10 hover:text-white'
                           }`}
@@ -134,6 +154,7 @@ export default function AdminSidebar() {
             <Link
               key={item.href}
               href={item.href!}
+              onClick={onClose}
               className={`flex items-center gap-3 px-3 py-2.5 rounded-lg mb-0.5 text-sm transition-all ${
                 isActive ? 'bg-blue-600 text-white font-medium' : 'text-gray-300 hover:bg-white/10 hover:text-white'
               }`}
@@ -146,7 +167,7 @@ export default function AdminSidebar() {
       </nav>
 
       {/* Admin User */}
-      <div className="px-3 py-3 border-t border-white/10">
+      <div className="px-3 py-3 border-t border-white/10 flex-shrink-0">
         <div className="bg-red-900/30 rounded-lg px-3 py-2 mb-2">
           <div className="text-xs text-red-300 font-medium">Super Admin</div>
           <div className="text-xs text-gray-400">admin@system.internal</div>

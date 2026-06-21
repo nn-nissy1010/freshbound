@@ -38,18 +38,18 @@ export default function EmailLogsPage() {
 
   return (
     <div className="p-6">
-      <div className="flex items-center justify-between mb-5">
+      <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between mb-5">
         <div>
           <h1 className="text-xl font-bold text-gray-800">{t(lang, 'メールログ', 'Email Logs')}</h1>
           <p className="text-sm text-gray-500 mt-0.5">{t(lang, '全テナントのメール送受信ログを横断検索できます', 'Search email activity logs across all tenants')}</p>
         </div>
-        <button className="flex items-center gap-2 text-sm border border-gray-200 rounded-lg px-3 py-2 bg-white hover:bg-gray-50 text-gray-600">
+        <button className="flex items-center gap-2 text-sm border border-gray-200 rounded-lg px-3 py-2 bg-white hover:bg-gray-50 text-gray-600 w-fit">
           <Download size={14} />{t(lang, 'ログをエクスポート', 'Export Logs')}
         </button>
       </div>
 
       {/* Summary */}
-      <div className="grid grid-cols-5 gap-3 mb-4">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 mb-4">
         {[
           { label: t(lang, '送信', 'Sent'), value: '12,450', color: '#3b82f6' },
           { label: t(lang, '開封', 'Opened'), value: '2,614', color: '#10b981' },
@@ -76,46 +76,50 @@ export default function EmailLogsPage() {
       />
 
       <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
-        <table className="w-full">
-          <thead>
-            <tr className="bg-gray-50 border-b border-gray-100">
-              <th className="text-left text-xs font-medium text-gray-500 px-4 py-3">ID</th>
-              <th className="text-left text-xs font-medium text-gray-500 px-3 py-3">{t(lang, 'テナント', 'Tenant')}</th>
-              <th className="text-left text-xs font-medium text-gray-500 px-3 py-3">{t(lang, '送信先', 'To')}</th>
-              <th className="text-left text-xs font-medium text-gray-500 px-3 py-3">{t(lang, '件名', 'Subject')}</th>
-              <th className="text-left text-xs font-medium text-gray-500 px-3 py-3">{t(lang, 'イベント', 'Event')}</th>
-              <th className="text-left text-xs font-medium text-gray-500 px-3 py-3">{t(lang, '時刻', 'Time')}</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-50">
-            {filtered.map(log => {
-              const ec = eventColors[log.event] || { bg: '#f3f4f6', text: '#6b7280' };
-              return (
-                <tr key={log.id} className="hover:bg-gray-50 transition-colors">
-                  <td className="px-4 py-2.5 text-xs font-mono text-gray-400">{log.id}</td>
-                  <td className="px-3 py-2.5 text-xs text-gray-600 max-w-[140px] truncate">{log.tenant}</td>
-                  <td className="px-3 py-2.5 text-xs text-gray-700">{log.to}</td>
-                  <td className="px-3 py-2.5 text-xs text-gray-700 max-w-[200px] truncate">{log.subject}</td>
-                  <td className="px-3 py-2.5">
-                    <span className="text-xs px-2 py-0.5 rounded-full font-medium" style={{ backgroundColor: ec.bg, color: ec.text }}>
-                      {log.event}
-                    </span>
-                  </td>
-                  <td className="px-3 py-2.5 text-xs text-gray-400 whitespace-nowrap">{log.time}</td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[750px]">
+            <thead>
+              <tr className="bg-gray-50 border-b border-gray-100">
+                <th className="text-left text-xs font-medium text-gray-500 px-4 py-3">ID</th>
+                <th className="text-left text-xs font-medium text-gray-500 px-3 py-3">{t(lang, 'テナント', 'Tenant')}</th>
+                <th className="text-left text-xs font-medium text-gray-500 px-3 py-3">{t(lang, '送信先', 'To')}</th>
+                <th className="text-left text-xs font-medium text-gray-500 px-3 py-3">{t(lang, '件名', 'Subject')}</th>
+                <th className="text-left text-xs font-medium text-gray-500 px-3 py-3">{t(lang, 'イベント', 'Event')}</th>
+                <th className="text-left text-xs font-medium text-gray-500 px-3 py-3">{t(lang, '時刻', 'Time')}</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-50">
+              {filtered.map(log => {
+                const ec = eventColors[log.event] || { bg: '#f3f4f6', text: '#6b7280' };
+                return (
+                  <tr key={log.id} className="hover:bg-gray-50 transition-colors">
+                    <td className="px-4 py-2.5 text-xs font-mono text-gray-400">{log.id}</td>
+                    <td className="px-3 py-2.5 text-xs text-gray-600 max-w-[140px] truncate">{log.tenant}</td>
+                    <td className="px-3 py-2.5 text-xs text-gray-700">{log.to}</td>
+                    <td className="px-3 py-2.5 text-xs text-gray-700 max-w-[200px] truncate">{log.subject}</td>
+                    <td className="px-3 py-2.5">
+                      <span className="text-xs px-2 py-0.5 rounded-full font-medium" style={{ backgroundColor: ec.bg, color: ec.text }}>
+                        {log.event}
+                      </span>
+                    </td>
+                    <td className="px-3 py-2.5 text-xs text-gray-400 whitespace-nowrap">{log.time}</td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
       </div>
 
       <div className="flex items-center justify-between mt-3 text-xs text-gray-500">
         <span>1-20 / 12,450 {t(lang, '件', 'records')}</span>
         <div className="flex items-center gap-1">
           <button className="p-1 border border-gray-200 rounded hover:bg-gray-50"><ChevronLeft size={14} /></button>
-          {[1,2,3,'...',623].map((p, i) => (
-            <button key={i} className={`w-7 h-7 rounded text-xs ${p === 1 ? 'bg-blue-600 text-white' : 'border border-gray-200 hover:bg-gray-50 text-gray-600'}`}>{p}</button>
-          ))}
+          <div className="hidden sm:flex gap-1">
+            {[1,2,3,'...',623].map((p, i) => (
+              <button key={i} className={`w-7 h-7 rounded text-xs ${p === 1 ? 'bg-blue-600 text-white' : 'border border-gray-200 hover:bg-gray-50 text-gray-600'}`}>{p}</button>
+            ))}
+          </div>
           <button className="p-1 border border-gray-200 rounded hover:bg-gray-50"><ChevronRight size={14} /></button>
         </div>
       </div>
