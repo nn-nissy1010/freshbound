@@ -7,11 +7,11 @@ import { RefreshCw, AlertTriangle, CheckCircle, Clock } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
 const latencyData = [
-  { time: '09:00', sendgrid: 42, openai: 310, musubu: 890, hunter: 85 },
-  { time: '09:30', sendgrid: 45, openai: 325, musubu: 1100, hunter: 88 },
-  { time: '10:00', sendgrid: 48, openai: 318, musubu: 1250, hunter: 92 },
-  { time: '10:30', sendgrid: 44, openai: 340, musubu: 980, hunter: 86 },
-  { time: '11:00', sendgrid: 46, openai: 315, musubu: 1200, hunter: 90 },
+  { time: '09:00', sendgrid: 42, openai: 310, musubu: 890, hunter: 85, whoisxml: 120, supabase: 12, line: 65 },
+  { time: '09:30', sendgrid: 45, openai: 325, musubu: 1100, hunter: 88, whoisxml: 125, supabase: 11, line: 68 },
+  { time: '10:00', sendgrid: 48, openai: 318, musubu: 1250, hunter: 92, whoisxml: 118, supabase: 14, line: 72 },
+  { time: '10:30', sendgrid: 44, openai: 340, musubu: 980, hunter: 86, whoisxml: 122, supabase: 10, line: 64 },
+  { time: '11:00', sendgrid: 46, openai: 315, musubu: 1200, hunter: 90, whoisxml: 119, supabase: 12, line: 66 },
 ];
 
 const services = [
@@ -230,6 +230,9 @@ export default function APIMonitorPage() {
             <Line type="monotone" dataKey="openai" stroke="#10b981" strokeWidth={2} dot={false} name="OpenAI" />
             <Line type="monotone" dataKey="musubu" stroke="#f59e0b" strokeWidth={2} dot={false} name="musubu" />
             <Line type="monotone" dataKey="hunter" stroke="#8b5cf6" strokeWidth={2} dot={false} name="Hunter.io" />
+            <Line type="monotone" dataKey="whoisxml" stroke="#6366f1" strokeWidth={2} dot={false} name="WhoisXML" />
+            <Line type="monotone" dataKey="supabase" stroke="#06b6d4" strokeWidth={2} dot={false} name="Supabase" />
+            <Line type="monotone" dataKey="line" stroke="#22c55e" strokeWidth={2} dot={false} name="LINE" />
           </LineChart>
         </ResponsiveContainer>
         <div className="flex items-center gap-4 mt-2 justify-center flex-wrap">
@@ -238,6 +241,9 @@ export default function APIMonitorPage() {
             { label: 'OpenAI', color: '#10b981' },
             { label: 'musubu', color: '#f59e0b' },
             { label: 'Hunter.io', color: '#8b5cf6' },
+            { label: 'WhoisXML', color: '#6366f1' },
+            { label: 'Supabase', color: '#06b6d4' },
+            { label: 'LINE', color: '#22c55e' },
           ].map(l => (
             <div key={l.label} className="flex items-center gap-1.5">
               <div className="w-3 h-0.5 rounded" style={{ backgroundColor: l.color }} />
