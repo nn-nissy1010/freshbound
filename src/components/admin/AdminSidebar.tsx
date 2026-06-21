@@ -31,6 +31,7 @@ const navItems: NavItem[] = [
     children: [
       { href: '/admin/tenants', labelJa: '顧客一覧', labelEn: 'Customer List' },
       { href: '/admin/agencies', labelJa: '代理店一覧', labelEn: 'Agency List' },
+      { href: '/admin/invoices', labelJa: '請求書', labelEn: 'Invoices' },
     ],
   },
   { href: '/admin/users', labelJa: 'ユーザー管理', labelEn: 'Users', icon: Users },
