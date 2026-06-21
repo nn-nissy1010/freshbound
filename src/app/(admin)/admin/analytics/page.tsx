@@ -3,19 +3,19 @@
 import { useLang } from '@/components/admin/LangContext';
 import { t } from '@/lib/i18n';
 import StatCard from '@/components/admin/StatCard';
-import { TrendingUp, Mail, Users, DollarSign } from 'lucide-react';
+import { TrendingUp, Mail, Users, DollarSign, TrendingDown, UserMinus } from 'lucide-react';
 import {
   LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid,
   Tooltip, ResponsiveContainer, PieChart, Pie, Cell,
 } from 'recharts';
 
 const monthlyData = [
-  { month: '12月', tenants: 28, emails: 68000, mrr: 5600000 },
-  { month: '1月',  tenants: 32, emails: 78000, mrr: 6400000 },
-  { month: '2月',  tenants: 35, emails: 85000, mrr: 7000000 },
-  { month: '3月',  tenants: 38, emails: 92000, mrr: 7600000 },
-  { month: '4月',  tenants: 42, emails: 105000, mrr: 8400000 },
-  { month: '5月',  tenants: 48, emails: 124500, mrr: 9200000 },
+  { month: '12月', tenants: 28, emails: 68000, mrr: 5600000, bounceRate: 3.2, churnRate: 3.8 },
+  { month: '1月',  tenants: 32, emails: 78000, mrr: 6400000, bounceRate: 2.9, churnRate: 3.2 },
+  { month: '2月',  tenants: 35, emails: 85000, mrr: 7000000, bounceRate: 2.6, churnRate: 2.9 },
+  { month: '3月',  tenants: 38, emails: 92000, mrr: 7600000, bounceRate: 2.4, churnRate: 2.5 },
+  { month: '4月',  tenants: 42, emails: 105000, mrr: 8400000, bounceRate: 2.2, churnRate: 2.1 },
+  { month: '5月',  tenants: 48, emails: 124500, mrr: 9200000, bounceRate: 2.1, churnRate: 1.8 },
 ];
 
 const planData = [
@@ -42,11 +42,13 @@ export default function AnalyticsPage() {
         <p className="text-sm text-gray-500 mt-0.5">{t(lang, 'SaaS全体のKPIと成長トレンドを確認します', 'Review SaaS-wide KPIs and growth trends')}</p>
       </div>
 
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
         <StatCard label={t(lang, '総テナント数', 'Total Tenants')} value="48" icon={Users} color="#3b82f6" trend="+14.3% MoM" trendUp />
         <StatCard label={t(lang, '月間配信数', 'Monthly Emails')} value="124,500" icon={Mail} color="#10b981" trend="+18.6% MoM" trendUp />
         <StatCard label={t(lang, 'MRR（推定）', 'MRR (est.)')} value="¥9.2M" icon={DollarSign} color="#f59e0b" trend="+9.5% MoM" trendUp />
         <StatCard label={t(lang, '平均開封率', 'Avg Open Rate')} value="21.0%" icon={TrendingUp} color="#8b5cf6" trend="+2.3pt MoM" trendUp />
+        <StatCard label={t(lang, 'バウンス率', 'Bounce Rate')} value="2.1%" icon={TrendingDown} color="#ef4444" trend="-0.1pt MoM" trendUp />
+        <StatCard label={t(lang, 'チャーン率', 'Churn Rate')} value="1.8%" icon={UserMinus} color="#f97316" trend="-0.3pt MoM" trendUp />
       </div>
 
       {/* Charts */}
@@ -104,6 +106,25 @@ export default function AnalyticsPage() {
             <Bar dataKey="mrr" fill="#3b82f6" radius={[4, 4, 0, 0]} name="MRR" />
           </BarChart>
         </ResponsiveContainer>
+      </div>
+
+      {/* Bounce Rate & Churn Rate Trend */}
+      <div className="bg-white rounded-xl border border-gray-100 p-4 shadow-sm">
+        <h3 className="text-sm font-semibold text-gray-700 mb-4">{t(lang, 'バウンス率・チャーン率の推移', 'Bounce Rate & Churn Rate Trend')}</h3>
+        <ResponsiveContainer width="100%" height={160}>
+          <LineChart data={monthlyData} margin={{ top: 0, right: 10, left: 0, bottom: 0 }}>
+            <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+            <XAxis dataKey="month" tick={{ fontSize: 11, fill: '#9ca3af' }} />
+            <YAxis tick={{ fontSize: 11, fill: '#9ca3af' }} unit="%" domain={[0, 6]} />
+            <Tooltip formatter={(v, name) => [`${Number(v).toFixed(1)}%`, name]} contentStyle={{ fontSize: 12, borderRadius: 8 }} />
+            <Line type="monotone" dataKey="bounceRate" stroke="#ef4444" strokeWidth={2} dot={{ r: 3 }} name={t(lang, 'バウンス率', 'Bounce Rate')} />
+            <Line type="monotone" dataKey="churnRate" stroke="#f97316" strokeWidth={2} strokeDasharray="4 2" dot={{ r: 3 }} name={t(lang, 'チャーン率', 'Churn Rate')} />
+          </LineChart>
+        </ResponsiveContainer>
+        <div className="flex items-center gap-5 mt-2 justify-center">
+          <div className="flex items-center gap-1.5"><div className="w-3 h-0.5 rounded bg-red-500" /><span className="text-xs text-gray-500">{t(lang, 'バウンス率', 'Bounce Rate')}</span></div>
+          <div className="flex items-center gap-1.5"><div className="w-3 h-0.5 rounded bg-orange-500" /><span className="text-xs text-gray-500">{t(lang, 'チャーン率', 'Churn Rate')}</span></div>
+        </div>
       </div>
 
       {/* Top Tenants */}
