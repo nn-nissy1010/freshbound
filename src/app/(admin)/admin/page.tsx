@@ -2,11 +2,9 @@
 
 import { useLang } from '@/components/admin/LangContext';
 import { t } from '@/lib/i18n';
-import StatusBadge from '@/components/admin/StatusBadge';
 import {
-  Building2, Users, Mail, Eye, Reply, Star,
-  Cpu, DollarSign, UserPlus, Activity, RefreshCw,
-  Calendar, ChevronDown, CheckCircle, AlertCircle,
+  Building2, Users, Mail, Eye, TrendingDown, AlertCircle,
+  RefreshCw, Calendar, ChevronDown, CheckCircle,
 } from 'lucide-react';
 import {
   BarChart, Bar, LineChart, Line, XAxis, YAxis,
@@ -164,28 +162,28 @@ export default function AdminDashboard() {
           <div className="text-xs text-gray-400 mt-1">{t(lang, '前日比', 'vs yesterday')} <span className="text-green-600 font-medium">+1.6pt</span></div>
         </div>
 
-        {/* 本日の返信率 */}
+        {/* バウンス率 */}
         <div className="bg-white rounded-xl border border-gray-100 p-4 shadow-sm">
           <div className="flex items-center gap-2 mb-2">
             <div className="w-7 h-7 rounded-lg bg-orange-50 flex items-center justify-center">
-              <Reply size={14} className="text-orange-500" />
+              <TrendingDown size={14} className="text-orange-500" />
             </div>
-            <span className="text-xs text-gray-500">{t(lang, '本日の返信率', 'Reply Rate Today')}</span>
+            <span className="text-xs text-gray-500">{t(lang, 'バウンス率', 'Bounce Rate')}</span>
           </div>
-          <div className="text-2xl font-bold text-gray-800">3.2 <span className="text-sm font-normal text-gray-500">%</span></div>
-          <div className="text-xs text-gray-400 mt-1">{t(lang, '前日比', 'vs yesterday')} <span className="text-green-600 font-medium">+0.4pt</span></div>
+          <div className="text-2xl font-bold text-gray-800">2.1 <span className="text-sm font-normal text-gray-500">%</span></div>
+          <div className="text-xs text-gray-400 mt-1">{t(lang, '前日比', 'vs yesterday')} <span className="text-red-500 font-medium">+0.2pt</span></div>
         </div>
 
-        {/* ホットリード数 */}
+        {/* エラー数 */}
         <div className="bg-white rounded-xl border border-gray-100 p-4 shadow-sm">
           <div className="flex items-center gap-2 mb-2">
-            <div className="w-7 h-7 rounded-lg bg-yellow-50 flex items-center justify-center">
-              <Star size={14} className="text-yellow-500" />
+            <div className="w-7 h-7 rounded-lg bg-red-50 flex items-center justify-center">
+              <AlertCircle size={14} className="text-red-500" />
             </div>
-            <span className="text-xs text-gray-500">{t(lang, 'ホットリード数', 'Hot Leads')}</span>
+            <span className="text-xs text-gray-500">{t(lang, 'エラー数', 'Error Count')}</span>
           </div>
-          <div className="text-2xl font-bold text-gray-800">312 <span className="text-sm font-normal text-gray-500">{t(lang, '件', '')}</span></div>
-          <div className="text-xs text-gray-400 mt-1">{t(lang, '前日比', 'vs yesterday')} <span className="text-green-600 font-medium">+18</span></div>
+          <div className="text-2xl font-bold text-gray-800">18 <span className="text-sm font-normal text-gray-500">{t(lang, '件', '')}</span></div>
+          <div className="text-xs text-gray-400 mt-1">{t(lang, '前日比', 'vs yesterday')} <span className="text-red-500 font-medium">+3</span></div>
         </div>
       </div>
 
