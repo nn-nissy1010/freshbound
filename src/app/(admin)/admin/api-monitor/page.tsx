@@ -4,16 +4,6 @@ import { useLang } from '@/components/admin/LangContext';
 import { t } from '@/lib/i18n';
 import StatusBadge from '@/components/admin/StatusBadge';
 import { RefreshCw, AlertTriangle, CheckCircle, Clock } from 'lucide-react';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-
-const latencyData = [
-  { time: '09:00', sendgrid: 42, openai: 310, musubu: 890, hunter: 85, whoisxml: 120, supabase: 12, line: 65 },
-  { time: '09:30', sendgrid: 45, openai: 325, musubu: 1100, hunter: 88, whoisxml: 125, supabase: 11, line: 68 },
-  { time: '10:00', sendgrid: 48, openai: 318, musubu: 1250, hunter: 92, whoisxml: 118, supabase: 14, line: 72 },
-  { time: '10:30', sendgrid: 44, openai: 340, musubu: 980, hunter: 86, whoisxml: 122, supabase: 10, line: 64 },
-  { time: '11:00', sendgrid: 46, openai: 315, musubu: 1200, hunter: 90, whoisxml: 119, supabase: 12, line: 66 },
-];
-
 const services = [
   {
     name: 'SendGrid',
@@ -40,7 +30,7 @@ const services = [
     color: '#10b981',
   },
   {
-    name: 'musubu',
+    name: '[TBD] 企業発掘',
     status: 'degraded',
     latency: '1,200ms',
     dailyUsage: 9100,
@@ -52,7 +42,7 @@ const services = [
     color: '#f59e0b',
   },
   {
-    name: 'Hunter.io',
+    name: 'Prospeo',
     status: 'healthy',
     latency: '88ms',
     dailyUsage: 3500,
@@ -64,7 +54,7 @@ const services = [
     color: '#8b5cf6',
   },
   {
-    name: 'WhoisXML',
+    name: 'WhoisJSON',
     status: 'healthy',
     latency: '120ms',
     dailyUsage: 1200,
@@ -217,41 +207,6 @@ export default function APIMonitorPage() {
         ))}
       </div>
 
-      {/* Latency Chart */}
-      <div className="bg-white rounded-xl border border-gray-100 p-4 shadow-sm">
-        <h3 className="text-sm font-semibold text-gray-700 mb-4">{t(lang, 'レイテンシ推移（本日）', 'Latency Trend (Today)')}</h3>
-        <ResponsiveContainer width="100%" height={200}>
-          <LineChart data={latencyData} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-            <XAxis dataKey="time" tick={{ fontSize: 11, fill: '#9ca3af' }} />
-            <YAxis tick={{ fontSize: 11, fill: '#9ca3af' }} unit="ms" />
-            <Tooltip contentStyle={{ fontSize: 12, borderRadius: 8, border: '1px solid #e5e7eb' }} />
-            <Line type="monotone" dataKey="sendgrid" stroke="#3b82f6" strokeWidth={2} dot={false} name="SendGrid" />
-            <Line type="monotone" dataKey="openai" stroke="#10b981" strokeWidth={2} dot={false} name="OpenAI" />
-            <Line type="monotone" dataKey="musubu" stroke="#f59e0b" strokeWidth={2} dot={false} name="musubu" />
-            <Line type="monotone" dataKey="hunter" stroke="#8b5cf6" strokeWidth={2} dot={false} name="Hunter.io" />
-            <Line type="monotone" dataKey="whoisxml" stroke="#6366f1" strokeWidth={2} dot={false} name="WhoisXML" />
-            <Line type="monotone" dataKey="supabase" stroke="#06b6d4" strokeWidth={2} dot={false} name="Supabase" />
-            <Line type="monotone" dataKey="line" stroke="#22c55e" strokeWidth={2} dot={false} name="LINE" />
-          </LineChart>
-        </ResponsiveContainer>
-        <div className="flex items-center gap-4 mt-2 justify-center flex-wrap">
-          {[
-            { label: 'SendGrid', color: '#3b82f6' },
-            { label: 'OpenAI', color: '#10b981' },
-            { label: 'musubu', color: '#f59e0b' },
-            { label: 'Hunter.io', color: '#8b5cf6' },
-            { label: 'WhoisXML', color: '#6366f1' },
-            { label: 'Supabase', color: '#06b6d4' },
-            { label: 'LINE', color: '#22c55e' },
-          ].map(l => (
-            <div key={l.label} className="flex items-center gap-1.5">
-              <div className="w-3 h-0.5 rounded" style={{ backgroundColor: l.color }} />
-              <span className="text-xs text-gray-500">{l.label}</span>
-            </div>
-          ))}
-        </div>
-      </div>
     </div>
   );
 }
