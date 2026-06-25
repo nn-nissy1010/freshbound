@@ -35,8 +35,8 @@ export default function UsersPage() {
   );
 
   return (
-    <div className="p-6">
-      <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between mb-5">
+    <div className="p-6 space-y-5">
+      <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
         <div>
           <h1 className="text-xl font-bold text-gray-800">{t(lang, 'ユーザー管理', 'User Management')}</h1>
           <p className="text-sm text-gray-500 mt-0.5">{t(lang, '全テナントのユーザーを横断管理します', 'Manage users across all tenants')}</p>

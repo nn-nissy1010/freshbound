@@ -40,8 +40,8 @@ export default function TenantsPage() {
   );
 
   return (
-    <div className="p-6">
-      <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between mb-5">
+    <div className="p-6 space-y-5">
+      <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
         <div>
           <h1 className="text-xl font-bold text-gray-800">{t(lang, 'テナント管理', 'Tenant Management')}</h1>
           <p className="text-sm text-gray-500 mt-0.5">{t(lang, '全テナントの管理・監視・操作を行います', 'Manage, monitor and operate all tenants')}</p>
@@ -58,7 +58,7 @@ export default function TenantsPage() {
       </div>
 
       {/* Summary */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         {[
           { label: t(lang, '総テナント', 'Total'), value: '48', color: '#3b82f6' },
           { label: t(lang, 'アクティブ', 'Active'), value: '44', color: '#10b981' },

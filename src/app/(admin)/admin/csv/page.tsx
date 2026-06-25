@@ -27,13 +27,13 @@ export default function CSVPage() {
   );
 
   return (
-    <div className="p-6">
-      <div className="mb-5">
+    <div className="p-6 space-y-5">
+      <div>
         <h1 className="text-xl font-bold text-gray-800">{t(lang, 'CSV取込管理', 'CSV Import Management')}</h1>
         <p className="text-sm text-gray-500 mt-0.5">{t(lang, '全テナントのCSV取込状況を監視・管理します。UTF-8・Shift-JIS対応', 'Monitor and manage CSV imports across all tenants. Supports UTF-8 and Shift-JIS')}</p>
       </div>
 
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         <StatCard label={t(lang, '総取込数（今月）', 'Total Imports (Month)')} value="24" icon={FileText} color="#3b82f6" />
         <StatCard label={t(lang, '成功', 'Successful')} value="22" icon={CheckCircle} color="#10b981" />
         <StatCard label={t(lang, '失敗', 'Failed')} value="2" icon={AlertTriangle} color="#ef4444" />

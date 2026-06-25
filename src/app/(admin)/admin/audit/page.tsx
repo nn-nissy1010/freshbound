@@ -50,8 +50,8 @@ export default function AuditLogsPage() {
   );
 
   return (
-    <div className="p-6">
-      <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between mb-5">
+    <div className="p-6 space-y-5">
+      <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
         <div>
           <div className="flex items-center gap-2">
             <h1 className="text-xl font-bold text-gray-800">{t(lang, '監査ログ', 'Audit Logs')}</h1>
@@ -65,7 +65,7 @@ export default function AuditLogsPage() {
       </div>
 
       {/* Severity Summary */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         {[
           { label: t(lang, 'クリティカル', 'Critical'), count: 1, color: '#dc2626', bg: '#fee2e2' },
           { label: t(lang, '高', 'High'), count: 3, color: '#d97706', bg: '#fef3c7' },

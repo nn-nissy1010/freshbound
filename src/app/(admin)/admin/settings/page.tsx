@@ -24,8 +24,8 @@ export default function SystemSettingsPage() {
   };
 
   return (
-    <div className="p-6">
-      <div className="mb-5">
+    <div className="p-6 space-y-5">
+      <div>
         <h1 className="text-xl font-bold text-gray-800">{t(lang, 'システム設定', 'System Settings')}</h1>
         <p className="text-sm text-gray-500 mt-0.5">{t(lang, 'グローバル設定・API接続・フィーチャーフラグを管理します', 'Manage global config, API connections and feature flags')}</p>
       </div>

@@ -39,8 +39,8 @@ export default function CompliancePage() {
   );
 
   return (
-    <div className="p-6">
-      <div className="flex items-center justify-between mb-5">
+    <div className="p-6 space-y-5">
+      <div className="flex items-center justify-between">
         <div>
           <h1 className="text-xl font-bold text-gray-800">{t(lang, 'コンプライアンス・配信停止管理', 'Compliance & Unsubscribe Management')}</h1>
           <p className="text-sm text-gray-500 mt-0.5">{t(lang, 'グローバル配信停止リスト・スパム報告・ドメイン評判を管理します', 'Manage global suppression list, spam reports and domain reputation')}</p>
@@ -56,7 +56,7 @@ export default function CompliancePage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-4 gap-3 mb-4">
+      <div className="grid grid-cols-4 gap-3">
         <StatCard label={t(lang, '総抑制数', 'Total Suppressed')} value="2,315" icon={Ban} color="#ef4444" />
         <StatCard label={t(lang, 'スパム報告', 'Spam Complaints')} value="48" icon={AlertTriangle} color="#f59e0b" trend="+3 today" trendUp={false} />
         <StatCard label={t(lang, 'ドメイン警告', 'Domain Warnings')} value="2" icon={Shield} color="#8b5cf6" />
@@ -65,7 +65,7 @@ export default function CompliancePage() {
 
       {/* Domain Warnings */}
       {domainWarnings.length > 0 && (
-        <div className="bg-red-50 border border-red-200 rounded-xl p-4 mb-4">
+        <div className="bg-red-50 border border-red-200 rounded-xl p-4">
           <div className="flex items-center gap-2 mb-3">
             <AlertTriangle size={15} className="text-red-600" />
             <h3 className="text-sm font-semibold text-red-700">{t(lang, 'ドメイン評判警告', 'Domain Reputation Warnings')}</h3>
