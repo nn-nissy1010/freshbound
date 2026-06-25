@@ -4,9 +4,10 @@ import { useLang } from '@/components/admin/LangContext';
 import { t } from '@/lib/i18n';
 import {
   RefreshCw, CheckCircle, XCircle, Clock, AlertTriangle,
-  ChevronDown, PlayCircle, List, Building2, Globe, UserSearch,
-  Star, Mail, ChevronRight,
+  List, Building2, Globe, UserSearch, Star, Mail,
 } from 'lucide-react';
+import StatCard from '@/components/admin/StatCard';
+import StatusBadge from '@/components/admin/StatusBadge';
 
 type StepStatus = 'success' | 'failed' | 'running' | 'pending' | 'warning';
 
@@ -128,12 +129,6 @@ const statusConfig: Record<StepStatus, { bg: string; border: string; dot: string
   pending: { bg: 'bg-white', border: 'border-gray-100',    dot: 'bg-gray-300',   badge: 'bg-gray-100',   badgeText: 'text-gray-500',   label: '待機中',   labelEn: 'Pending' },
 };
 
-function RunStatusIcon({ status }: { status: string }) {
-  if (status === 'success') return <CheckCircle size={14} className="text-green-500" />;
-  if (status === 'warning') return <AlertTriangle size={14} className="text-yellow-500" />;
-  if (status === 'failed')  return <XCircle size={14} className="text-red-500" />;
-  return <PlayCircle size={14} className="text-blue-500" />;
-}
 
 export default function PipelineMonitorPage() {
   const { lang } = useLang();
@@ -182,26 +177,10 @@ export default function PipelineMonitorPage() {
 
       {/* Summary cards */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        <div className="bg-white rounded-xl border border-gray-100 p-4 shadow-sm">
-          <div className="text-xs text-gray-500 mb-1">{t(lang, '本日の処理件数', 'Processed Today')}</div>
-          <div className="text-2xl font-bold text-gray-800">{totalProcessed.toLocaleString()}</div>
-          <div className="text-xs text-gray-400 mt-1">{t(lang, '企業', 'companies')}</div>
-        </div>
-        <div className="bg-white rounded-xl border border-gray-100 p-4 shadow-sm">
-          <div className="text-xs text-gray-500 mb-1">{t(lang, '失敗件数', 'Failed')}</div>
-          <div className={`text-2xl font-bold ${totalFailed > 0 ? 'text-yellow-600' : 'text-gray-800'}`}>{totalFailed.toLocaleString()}</div>
-          <div className="text-xs text-gray-400 mt-1">{t(lang, '件', 'records')}</div>
-        </div>
-        <div className="bg-white rounded-xl border border-gray-100 p-4 shadow-sm">
-          <div className="text-xs text-gray-500 mb-1">{t(lang, 'パイプライン時間', 'Total Duration')}</div>
-          <div className="text-2xl font-bold text-gray-800">38<span className="text-sm font-normal text-gray-500">m</span></div>
-          <div className="text-xs text-gray-400 mt-1">06:00 → 06:38</div>
-        </div>
-        <div className="bg-white rounded-xl border border-gray-100 p-4 shadow-sm">
-          <div className="text-xs text-gray-500 mb-1">{t(lang, '最終実行', 'Last Run')}</div>
-          <div className="text-2xl font-bold text-gray-800">06:00</div>
-          <div className="text-xs text-gray-400 mt-1">2025/05/10</div>
-        </div>
+        <StatCard label={t(lang, '本日の処理件数', 'Processed Today')} value={totalProcessed.toLocaleString()} icon={Building2}    color="#3b82f6" sub={t(lang, '企業', 'companies')} />
+        <StatCard label={t(lang, '失敗件数', 'Failed')}                 value={totalFailed.toLocaleString()}   icon={AlertTriangle} color={totalFailed > 0 ? '#f59e0b' : '#10b981'} sub={t(lang, '件', 'records')} />
+        <StatCard label={t(lang, 'パイプライン時間', 'Total Duration')}  value="38m"                             icon={Clock}         color="#3b82f6" sub="06:00 → 06:38" />
+        <StatCard label={t(lang, '最終実行', 'Last Run')}               value="06:00"                           icon={Clock}         color="#10b981" sub="2025/05/10" />
       </div>
 
       {/* Pipeline Steps */}
@@ -251,9 +230,7 @@ export default function PipelineMonitorPage() {
                         </span>
                       </div>
                       <span className="text-xs bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded font-mono">{step.features}</span>
-                      <span className={`text-xs px-1.5 py-0.5 rounded font-medium ${cfg.badge} ${cfg.badgeText}`}>
-                        {t(lang, cfg.label, cfg.labelEn)}
-                      </span>
+                      <StatusBadge status={step.status} label={t(lang, cfg.label, cfg.labelEn)} />
                     </div>
                     <p className="text-xs text-gray-400 mb-2">{t(lang, step.descJa, step.descEn)}</p>
 
@@ -311,16 +288,14 @@ export default function PipelineMonitorPage() {
                     <span className={run.totalFailed > 0 ? 'text-red-500' : 'text-gray-400'}>{run.totalProcessed > 0 ? run.totalFailed : '—'}</span>
                   </td>
                   <td className="px-3 py-2.5">
-                    <span className={`inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full font-medium ${
-                      run.status === 'success' ? 'bg-green-100 text-green-700' :
-                      run.status === 'warning' ? 'bg-yellow-100 text-yellow-700' :
-                      'bg-red-100 text-red-700'
-                    }`}>
-                      <RunStatusIcon status={run.status} />
-                      {run.status === 'success' ? t(lang, '正常完了', 'Success') :
-                       run.status === 'warning' ? t(lang, '警告あり', 'Warning') :
-                       t(lang, '失敗', 'Failed')}
-                    </span>
+                    <StatusBadge
+                      status={run.status}
+                      label={
+                        run.status === 'success' ? t(lang, '正常完了', 'Success') :
+                        run.status === 'warning' ? t(lang, '警告あり', 'Warning') :
+                        t(lang, '失敗', 'Failed')
+                      }
+                    />
                   </td>
                 </tr>
               ))}

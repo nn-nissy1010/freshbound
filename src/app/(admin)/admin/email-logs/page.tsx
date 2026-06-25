@@ -4,8 +4,16 @@ import { useState } from 'react';
 import { useLang } from '@/components/admin/LangContext';
 import { t } from '@/lib/i18n';
 import StatusBadge from '@/components/admin/StatusBadge';
+import StatCard from '@/components/admin/StatCard';
 import FilterBar from '@/components/admin/FilterBar';
-import { ChevronLeft, ChevronRight, Download, RefreshCw, AlertCircle } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Download, RefreshCw, AlertCircle, Clock, Mail, XCircle } from 'lucide-react';
+
+const EVENT_LABELS: Record<string, { ja: string; en: string }> = {
+  sent:         { ja: '送信',     en: 'Sent' },
+  opened:       { ja: '開封',     en: 'Opened' },
+  replied:      { ja: '返信',     en: 'Replied' },
+  unsubscribed: { ja: '配信停止', en: 'Unsubscribed' },
+};
 
 const logs = [
   { id: 'LOG-9001', tenant: '株式会社テックスタート',    to: 't.tanaka@sample-tech.co.jp',      subject: '新サービスのご案内',        event: 'opened',      time: '2025/05/10 10:45' },
@@ -30,13 +38,6 @@ const errorEmails = [
   { id: 'ERR-0023', tenant: 'グロースSaaS株式会社',      to: 'noreply@blocked-domain.jp',       subject: '【ご提案】ご確認ください', errorCode: '554', errorMsg: 'Message rejected as spam',      time: '2025/05/10 08:55', retryable: false },
   { id: 'ERR-0024', tenant: '株式会社テックスタート',    to: 'invalid@@malformed.co.jp',        subject: '新サービスのご案内',  errorCode: '501', errorMsg: 'Invalid email address format',      time: '2025/05/10 08:30', retryable: false },
 ];
-
-const eventColors: Record<string, { bg: string; text: string }> = {
-  sent:         { bg: '#dbeafe', text: '#2563eb' },
-  opened:       { bg: '#dcfce7', text: '#16a34a' },
-  replied:      { bg: '#ede9fe', text: '#7c3aed' },
-  unsubscribed: { bg: '#fef3c7', text: '#d97706' },
-};
 
 type Tab = 'queue' | 'log' | 'error';
 
@@ -81,22 +82,10 @@ export default function EmailLogsPage() {
 
       {/* Summary */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        <div className="bg-white rounded-xl border border-gray-100 p-3 shadow-sm">
-          <div className="text-xs text-gray-500">{t(lang, 'キュー（配信前）', 'Queue (Pending)')}</div>
-          <div className="text-xl font-bold mt-1 text-yellow-500">{queueEmails.length.toLocaleString()}</div>
-        </div>
-        <div className="bg-white rounded-xl border border-gray-100 p-3 shadow-sm">
-          <div className="text-xs text-gray-500">{t(lang, '配信成功', 'Delivered')}</div>
-          <div className="text-xl font-bold mt-1 text-blue-500">12,307</div>
-        </div>
-        <div className="bg-white rounded-xl border border-gray-100 p-3 shadow-sm">
-          <div className="text-xs text-gray-500">{t(lang, '開封', 'Opened')}</div>
-          <div className="text-xl font-bold mt-1 text-green-500">2,614</div>
-        </div>
-        <div className="bg-white rounded-xl border border-gray-100 p-3 shadow-sm">
-          <div className="text-xs text-gray-500">{t(lang, 'エラー（未着）', 'Errors (Undelivered)')}</div>
-          <div className="text-xl font-bold mt-1 text-red-500">{errorEmails.length.toLocaleString()}</div>
-        </div>
+        <StatCard label={t(lang, 'キュー（配信前）', 'Queue')}         value={queueEmails.length} icon={Clock}   color="#f59e0b" />
+        <StatCard label={t(lang, '配信成功', 'Delivered')}             value="12,307"             icon={Mail}   color="#3b82f6" />
+        <StatCard label={t(lang, '開封', 'Opened')}                   value="2,614"              icon={Mail}   color="#10b981" />
+        <StatCard label={t(lang, 'エラー（未着）', 'Errors')}          value={errorEmails.length} icon={XCircle} color="#ef4444" />
       </div>
 
       {/* Tab switcher */}
@@ -194,7 +183,6 @@ export default function EmailLogsPage() {
                 </thead>
                 <tbody className="divide-y divide-gray-50">
                   {filteredLogs.map(log => {
-                    const ec = eventColors[log.event] || { bg: '#f3f4f6', text: '#6b7280' };
                     return (
                       <tr key={log.id} className="hover:bg-gray-50 transition-colors">
                         <td className="px-4 py-2.5 text-xs font-mono text-gray-400">{log.id}</td>
@@ -202,9 +190,7 @@ export default function EmailLogsPage() {
                         <td className="px-3 py-2.5 text-xs text-gray-700">{log.to}</td>
                         <td className="px-3 py-2.5 text-xs text-gray-700 max-w-[200px] truncate">{log.subject}</td>
                         <td className="px-3 py-2.5">
-                          <span className="text-xs px-2 py-0.5 rounded-full font-medium" style={{ backgroundColor: ec.bg, color: ec.text }}>
-                            {log.event}
-                          </span>
+                          <StatusBadge status={log.event} label={t(lang, EVENT_LABELS[log.event]?.ja ?? log.event, EVENT_LABELS[log.event]?.en ?? log.event)} />
                         </td>
                         <td className="px-3 py-2.5 text-xs text-gray-400 whitespace-nowrap">{log.time}</td>
                       </tr>

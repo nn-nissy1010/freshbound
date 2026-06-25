@@ -7,8 +7,9 @@ import StatusBadge from '@/components/admin/StatusBadge';
 import FilterBar from '@/components/admin/FilterBar';
 import {
   Plus, Download, MoreVertical, ChevronLeft, ChevronRight,
-  Eye, UserCheck, Ban, TrendingUp, RefreshCw, CheckCircle, X,
+  Eye, UserCheck, Ban, TrendingUp, RefreshCw, CheckCircle, X, Building2, Clock,
 } from 'lucide-react';
+import StatCard from '@/components/admin/StatCard';
 
 const tenants = [
   { id: 'T001', name: '株式会社テックスタート', plan: 'standard', users: 5, status: 'active', subscriptionStatus: 'active', emailsSent: 12450, created: '2025/01/15', lastActive: '2025/05/10', reseller: 'Agency A' },
@@ -21,12 +22,6 @@ const tenants = [
   { id: 'T008', name: '合同会社フューチャーズ', plan: 'trial', users: 1, status: 'inactive', subscriptionStatus: 'canceled', emailsSent: 0, created: '2025/05/08', lastActive: '2025/05/08', reseller: '—' },
 ];
 
-const subStatusMap: Record<string, { label: string; bg: string; text: string }> = {
-  active:    { label: 'active',    bg: '#dcfce7', text: '#16a34a' },
-  trialing:  { label: 'trialing', bg: '#dbeafe', text: '#2563eb' },
-  past_due:  { label: 'past_due', bg: '#fee2e2', text: '#dc2626' },
-  canceled:  { label: 'canceled', bg: '#f3f4f6', text: '#6b7280' },
-};
 
 export default function TenantsPage() {
   const { lang } = useLang();
@@ -59,17 +54,10 @@ export default function TenantsPage() {
 
       {/* Summary */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        {[
-          { label: t(lang, '総テナント', 'Total'), value: '48', color: '#3b82f6' },
-          { label: t(lang, 'アクティブ', 'Active'), value: '44', color: '#10b981' },
-          { label: t(lang, '停止中', 'Suspended'), value: '2', color: '#ef4444' },
-          { label: t(lang, 'トライアル', 'Trial'), value: '6', color: '#8b5cf6' },
-        ].map(s => (
-          <div key={s.label} className="bg-white rounded-xl border border-gray-100 p-3 shadow-sm">
-            <div className="text-xs text-gray-500">{s.label}</div>
-            <div className="text-2xl font-bold mt-1" style={{ color: s.color }}>{s.value}</div>
-          </div>
-        ))}
+        <StatCard label={t(lang, '総テナント', 'Total')}    value="48" icon={Building2}    color="#3b82f6" />
+        <StatCard label={t(lang, 'アクティブ', 'Active')}   value="44" icon={CheckCircle}  color="#10b981" />
+        <StatCard label={t(lang, '停止中', 'Suspended')}    value="2"  icon={Ban}           color="#ef4444" />
+        <StatCard label={t(lang, 'トライアル', 'Trial')}    value="6"  icon={Clock}         color="#f59e0b" />
       </div>
 
       <FilterBar
@@ -112,7 +100,7 @@ export default function TenantsPage() {
                   <td className="px-3 py-3 text-sm text-gray-700 text-right">{tenant.users}</td>
                   <td className="px-3 py-3"><StatusBadge status={tenant.status} /></td>
                   <td className="px-3 py-3">
-                    {(() => { const s = subStatusMap[tenant.subscriptionStatus] ?? subStatusMap.canceled; return <span className="text-xs px-2 py-0.5 rounded-full font-medium" style={{ backgroundColor: s.bg, color: s.text }}>{s.label}</span>; })()}
+                    <StatusBadge status={tenant.subscriptionStatus} />
                   </td>
                   <td className="px-3 py-3 text-sm text-gray-700 text-right">{tenant.emailsSent.toLocaleString()}</td>
                   <td className="px-3 py-3 text-xs text-gray-500">{tenant.created}</td>

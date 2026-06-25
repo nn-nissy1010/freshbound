@@ -7,6 +7,9 @@ import {
   BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid,
   Tooltip, ResponsiveContainer, PieChart, Pie, Cell,
 } from 'recharts';
+import StatCard from '@/components/admin/StatCard';
+import StatusBadge from '@/components/admin/StatusBadge';
+import { TrendingUp, Users, TrendingDown } from 'lucide-react';
 
 const monthlyData = [
   { month: '12月', newSignups: 4, mrr: 5600000, churnRate: 3.8 },
@@ -18,9 +21,9 @@ const monthlyData = [
 ];
 
 const planData = [
-  { name: 'Trial', value: 6, color: '#8b5cf6' },
-  { name: 'Standard', value: 32, color: '#3b82f6' },
-  { name: 'Enterprise', value: 10, color: '#f59e0b' },
+  { name: 'Trial',      value: 6,  color: '#f59e0b', status: 'trial' },
+  { name: 'Standard',   value: 32, color: '#3b82f6', status: 'standard' },
+  { name: 'Enterprise', value: 10, color: '#10b981', status: 'enterprise' },
 ];
 
 const tenantActivity = [
@@ -31,10 +34,10 @@ const tenantActivity = [
   { name: '株式会社クラウドエッジ', plan: 'ベーシック', action: '配信停止設定', emails: 3200, time: '3時間前' },
 ];
 
-const planColors: Record<string, { bg: string; text: string }> = {
-  'プロ':        { bg: '#ede9fe', text: '#7c3aed' },
-  'スタンダード':{ bg: '#dbeafe', text: '#2563eb' },
-  'ベーシック':  { bg: '#f3f4f6', text: '#6b7280' },
+const planStatusMap: Record<string, string> = {
+  'プロ':         'enterprise',
+  'スタンダード': 'standard',
+  'ベーシック':   'trial',
 };
 
 export default function AnalyticsPage() {
@@ -72,21 +75,9 @@ export default function AnalyticsPage() {
         <>
           {/* Financial KPI row */}
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-            <div className="bg-white rounded-xl border border-gray-100 p-4 shadow-sm">
-              <div className="text-xs text-gray-500 mb-1">{t(lang, 'MRR（推定）', 'MRR (est.)')}</div>
-              <div className="text-2xl font-bold text-gray-800">¥{(latestMonth.mrr / 1000000).toFixed(1)}M</div>
-              <div className="text-xs text-green-600 font-medium mt-1">+{mrrGrowth}% MoM</div>
-            </div>
-            <div className="bg-white rounded-xl border border-gray-100 p-4 shadow-sm">
-              <div className="text-xs text-gray-500 mb-1">{t(lang, '新規サインアップ（今月）', 'New Signups (Month)')}</div>
-              <div className="text-2xl font-bold text-gray-800">{latestMonth.newSignups} <span className="text-sm font-normal text-gray-500">{t(lang, '社', '')}</span></div>
-              <div className="text-xs text-green-600 font-medium mt-1">+{latestMonth.newSignups - prevMonth.newSignups} {t(lang, '前月比', 'vs last month')}</div>
-            </div>
-            <div className="bg-white rounded-xl border border-gray-100 p-4 shadow-sm">
-              <div className="text-xs text-gray-500 mb-1">{t(lang, 'チャーン率', 'Churn Rate')}</div>
-              <div className="text-2xl font-bold text-gray-800">{latestMonth.churnRate} <span className="text-sm font-normal text-gray-500">%</span></div>
-              <div className="text-xs text-green-600 font-medium mt-1">-{(prevMonth.churnRate - latestMonth.churnRate).toFixed(1)}pt MoM</div>
-            </div>
+            <StatCard label={t(lang, 'MRR（推定）', 'MRR (est.)')}               value={`¥${(latestMonth.mrr / 1000000).toFixed(1)}M`} icon={TrendingUp}   color="#10b981" trend={`+${mrrGrowth}% MoM`} trendUp />
+            <StatCard label={t(lang, '新規サインアップ（今月）', 'New Signups')}   value={latestMonth.newSignups}                         icon={Users}        color="#3b82f6" trend={`+${latestMonth.newSignups - prevMonth.newSignups} ${t(lang, '前月比', 'MoM')}`} trendUp />
+            <StatCard label={t(lang, 'チャーン率', 'Churn Rate')}                 value={`${latestMonth.churnRate}%`}                    icon={TrendingDown} color="#ef4444" trend={`-${(prevMonth.churnRate - latestMonth.churnRate).toFixed(1)}pt MoM`} trendUp />
           </div>
 
           {/* MRR trend + Plan distribution */}
@@ -162,12 +153,11 @@ export default function AnalyticsPage() {
               </thead>
               <tbody className="divide-y divide-gray-50">
                 {tenantActivity.map((row, i) => {
-                  const pc = planColors[row.plan] || { bg: '#f3f4f6', text: '#6b7280' };
                   return (
                     <tr key={i} className="hover:bg-gray-50">
                       <td className="px-5 py-2.5 text-sm font-medium text-blue-600">{row.name}</td>
                       <td className="px-3 py-2.5">
-                        <span className="text-xs px-1.5 py-0.5 rounded-full font-medium" style={{ backgroundColor: pc.bg, color: pc.text }}>{row.plan}</span>
+                        <StatusBadge status={planStatusMap[row.plan] ?? 'inactive'} label={row.plan} />
                       </td>
                       <td className="px-3 py-2.5 text-sm text-gray-600">{row.action}</td>
                       <td className="px-3 py-2.5 text-sm text-gray-700 text-right font-medium">{row.emails.toLocaleString()}</td>

@@ -10,6 +10,7 @@ import {
   BarChart, Bar, LineChart, Line, XAxis, YAxis,
   CartesianGrid, Tooltip, ResponsiveContainer,
 } from 'recharts';
+import StatCard from '@/components/admin/StatCard';
 
 /* ── data ── */
 const emailTrendData = [
@@ -68,89 +69,13 @@ export default function AdminDashboard() {
 
       {/* ── Row 1: 7 KPI cards ── */}
       <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3">
-        {/* テナント総数 */}
-        <div className="bg-white rounded-xl border border-gray-100 p-4 shadow-sm">
-          <div className="flex items-center gap-2 mb-2">
-            <div className="w-7 h-7 rounded-lg bg-blue-50 flex items-center justify-center">
-              <Building2 size={14} className="text-blue-500" />
-            </div>
-            <span className="text-xs text-gray-500">{t(lang, 'テナント総数', 'Total Tenants')}</span>
-          </div>
-          <div className="text-2xl font-bold text-gray-800">23 <span className="text-sm font-normal text-gray-500">{t(lang, '社', '')}</span></div>
-          <div className="text-xs text-gray-400 mt-1">{t(lang, '前日比', 'vs yesterday')} <span className="text-green-600 font-medium">+1</span></div>
-        </div>
-
-        {/* アクティブテナント */}
-        <div className="bg-white rounded-xl border border-gray-100 p-4 shadow-sm">
-          <div className="flex items-center gap-2 mb-2">
-            <div className="w-7 h-7 rounded-lg bg-green-50 flex items-center justify-center">
-              <Users size={14} className="text-green-500" />
-            </div>
-            <span className="text-xs text-gray-500">{t(lang, 'アクティブ', 'Active')}</span>
-          </div>
-          <div className="text-2xl font-bold text-gray-800">18 <span className="text-sm font-normal text-gray-500">{t(lang, '社', '')}</span></div>
-          <div className="text-xs text-gray-400 mt-1">{t(lang, '前日比', 'vs yesterday')} <span className="text-green-600 font-medium">+2</span></div>
-        </div>
-
-        {/* 今日の配信数 */}
-        <div className="bg-white rounded-xl border border-gray-100 p-4 shadow-sm">
-          <div className="flex items-center gap-2 mb-2">
-            <div className="w-7 h-7 rounded-lg bg-purple-50 flex items-center justify-center">
-              <Mail size={14} className="text-purple-500" />
-            </div>
-            <span className="text-xs text-gray-500">{t(lang, '今日の配信数', 'Sent Today')}</span>
-          </div>
-          <div className="text-2xl font-bold text-gray-800">128,456</div>
-          <div className="text-xs text-gray-400 mt-1">{t(lang, '前日比', 'vs yesterday')} <span className="text-green-600 font-medium">+12.4%</span></div>
-        </div>
-
-        {/* 開封数 */}
-        <div className="bg-white rounded-xl border border-gray-100 p-4 shadow-sm">
-          <div className="flex items-center gap-2 mb-2">
-            <div className="w-7 h-7 rounded-lg bg-cyan-50 flex items-center justify-center">
-              <Eye size={14} className="text-cyan-500" />
-            </div>
-            <span className="text-xs text-gray-500">{t(lang, '開封数', 'Opens')}</span>
-          </div>
-          <div className="text-2xl font-bold text-gray-800">27,983</div>
-          <div className="text-xs text-gray-400 mt-1">{t(lang, '前日比', 'vs yesterday')} <span className="text-green-600 font-medium">+1,203</span></div>
-        </div>
-
-        {/* 返信数 */}
-        <div className="bg-white rounded-xl border border-gray-100 p-4 shadow-sm">
-          <div className="flex items-center gap-2 mb-2">
-            <div className="w-7 h-7 rounded-lg bg-indigo-50 flex items-center justify-center">
-              <MessageSquare size={14} className="text-indigo-500" />
-            </div>
-            <span className="text-xs text-gray-500">{t(lang, '返信数', 'Replies')}</span>
-          </div>
-          <div className="text-2xl font-bold text-gray-800">412</div>
-          <div className="text-xs text-gray-400 mt-1">{t(lang, '前日比', 'vs yesterday')} <span className="text-green-600 font-medium">+38</span></div>
-        </div>
-
-        {/* バウンス数 */}
-        <div className="bg-white rounded-xl border border-gray-100 p-4 shadow-sm">
-          <div className="flex items-center gap-2 mb-2">
-            <div className="w-7 h-7 rounded-lg bg-orange-50 flex items-center justify-center">
-              <TrendingDown size={14} className="text-orange-500" />
-            </div>
-            <span className="text-xs text-gray-500">{t(lang, 'バウンス数', 'Bounces')}</span>
-          </div>
-          <div className="text-2xl font-bold text-gray-800">2,697</div>
-          <div className="text-xs text-gray-400 mt-1">{t(lang, '前日比', 'vs yesterday')} <span className="text-red-500 font-medium">+256</span></div>
-        </div>
-
-        {/* 本日のAI抽出件数 */}
-        <div className="bg-white rounded-xl border border-gray-100 p-4 shadow-sm">
-          <div className="flex items-center gap-2 mb-2">
-            <div className="w-7 h-7 rounded-lg bg-emerald-50 flex items-center justify-center">
-              <Bot size={14} className="text-emerald-500" />
-            </div>
-            <span className="text-xs text-gray-500">{t(lang, 'AI抽出件数', 'AI Extracted')}</span>
-          </div>
-          <div className="text-2xl font-bold text-gray-800">3,840</div>
-          <div className="text-xs text-gray-400 mt-1">{t(lang, '前日比', 'vs yesterday')} <span className="text-green-600 font-medium">+520</span></div>
-        </div>
+        <StatCard label={t(lang, 'テナント総数', 'Total Tenants')} value="23" icon={Building2} color="#3b82f6" trend="+1" trendUp />
+        <StatCard label={t(lang, 'アクティブ', 'Active')}          value="18" icon={Users}      color="#10b981" trend="+2" trendUp />
+        <StatCard label={t(lang, '今日の配信数', 'Sent Today')}     value="128,456" icon={Mail}  color="#3b82f6" trend="+12.4%" trendUp />
+        <StatCard label={t(lang, '開封数', 'Opens')}               value="27,983" icon={Eye}     color="#10b981" trend="+1,203" trendUp />
+        <StatCard label={t(lang, '返信数', 'Replies')}             value="412"    icon={MessageSquare} color="#3b82f6" trend="+38" trendUp />
+        <StatCard label={t(lang, 'バウンス数', 'Bounces')}         value="2,697"  icon={TrendingDown}  color="#ef4444" trend="+256" trendUp={false} />
+        <StatCard label={t(lang, 'AI抽出件数', 'AI Extracted')}    value="3,840"  icon={Bot}     color="#10b981" trend="+520" trendUp />
       </div>
 
       {/* ── Row 2: Charts ── */}

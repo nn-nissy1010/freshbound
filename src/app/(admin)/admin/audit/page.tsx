@@ -4,7 +4,9 @@ import { useState } from 'react';
 import { useLang } from '@/components/admin/LangContext';
 import { t } from '@/lib/i18n';
 import FilterBar from '@/components/admin/FilterBar';
-import { Download, ChevronLeft, ChevronRight, Shield } from 'lucide-react';
+import { Download, ChevronLeft, ChevronRight, Shield, AlertTriangle, Info } from 'lucide-react';
+import StatCard from '@/components/admin/StatCard';
+import StatusBadge from '@/components/admin/StatusBadge';
 
 const auditLogs = [
   { id: 'AUD-1001', admin: 'System Admin', action: 'impersonate_tenant', target: '株式会社テックスタート (T001)', ip: '203.0.113.1', time: '2025/05/10 11:32', severity: 'high' },
@@ -19,12 +21,6 @@ const auditLogs = [
   { id: 'AUD-0992', admin: 'System Admin', action: 'suppression_added', target: 'Domain: spam-domain.co.jp — blacklisted', ip: '203.0.113.1', time: '2025/05/07 15:45', severity: 'medium' },
 ];
 
-const severityColors: Record<string, { bg: string; text: string }> = {
-  critical: { bg: '#fee2e2', text: '#dc2626' },
-  high:     { bg: '#fef3c7', text: '#d97706' },
-  medium:   { bg: '#dbeafe', text: '#2563eb' },
-  low:      { bg: '#f3f4f6', text: '#6b7280' },
-};
 
 const actionLabels: Record<string, { ja: string; en: string }> = {
   impersonate_tenant:    { ja: 'テナントなりすまし', en: 'Tenant Impersonation' },
@@ -66,18 +62,10 @@ export default function AuditLogsPage() {
 
       {/* Severity Summary */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        {[
-          { label: t(lang, 'クリティカル', 'Critical'), count: 1, color: '#dc2626', bg: '#fee2e2' },
-          { label: t(lang, '高', 'High'), count: 3, color: '#d97706', bg: '#fef3c7' },
-          { label: t(lang, '中', 'Medium'), count: 5, color: '#2563eb', bg: '#dbeafe' },
-          { label: t(lang, '低', 'Low'), count: 1, color: '#6b7280', bg: '#f3f4f6' },
-        ].map(s => (
-          <div key={s.label} className="bg-white rounded-xl border border-gray-100 p-3 shadow-sm">
-            <div className="text-xs text-gray-500">{s.label}</div>
-            <div className="text-2xl font-bold mt-1" style={{ color: s.color }}>{s.count}</div>
-            <div className="text-xs text-gray-400">{t(lang, '件（今日）', 'today')}</div>
-          </div>
-        ))}
+        <StatCard label={t(lang, 'クリティカル', 'Critical')} value="1" icon={AlertTriangle} color="#ef4444" sub={t(lang, '件（今日）', 'today')} />
+        <StatCard label={t(lang, '高', 'High')}               value="3" icon={AlertTriangle} color="#f59e0b" sub={t(lang, '件（今日）', 'today')} />
+        <StatCard label={t(lang, '中', 'Medium')}             value="5" icon={Info}          color="#3b82f6" sub={t(lang, '件（今日）', 'today')} />
+        <StatCard label={t(lang, '低', 'Low')}                value="1" icon={Shield}        color="#6b7280" sub={t(lang, '件（今日）', 'today')} />
       </div>
 
       <FilterBar
@@ -106,7 +94,6 @@ export default function AuditLogsPage() {
             </thead>
             <tbody className="divide-y divide-gray-50">
               {filtered.map(log => {
-                const sc = severityColors[log.severity] || severityColors.low;
                 const actionLabel = actionLabels[log.action]?.[lang] ?? log.action;
                 return (
                   <tr key={log.id} className={`hover:bg-gray-50 transition-colors ${log.severity === 'critical' ? 'bg-red-50/30' : ''}`}>
@@ -122,9 +109,7 @@ export default function AuditLogsPage() {
                     <td className="px-3 py-2.5 text-xs font-medium text-gray-700">{actionLabel}</td>
                     <td className="px-3 py-2.5 text-xs text-gray-600 max-w-[220px] truncate">{log.target}</td>
                     <td className="px-3 py-2.5">
-                      <span className="text-xs px-2 py-0.5 rounded-full font-medium" style={{ backgroundColor: sc.bg, color: sc.text }}>
-                        {log.severity}
-                      </span>
+                      <StatusBadge status={log.severity} />
                     </td>
                     <td className="px-3 py-2.5 text-xs font-mono text-gray-400">{log.ip}</td>
                     <td className="px-3 py-2.5 text-xs text-gray-400 whitespace-nowrap">{log.time}</td>

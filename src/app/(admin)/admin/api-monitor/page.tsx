@@ -3,7 +3,8 @@
 import { useLang } from '@/components/admin/LangContext';
 import { t } from '@/lib/i18n';
 import StatusBadge from '@/components/admin/StatusBadge';
-import { RefreshCw, AlertTriangle, CheckCircle, Clock } from 'lucide-react';
+import StatCard from '@/components/admin/StatCard';
+import { RefreshCw, AlertTriangle, CheckCircle, Clock, XCircle } from 'lucide-react';
 const services = [
   {
     name: 'SendGrid',
@@ -114,33 +115,9 @@ export default function APIMonitorPage() {
 
       {/* Summary */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-        <div className="bg-white rounded-xl border border-gray-100 p-4 shadow-sm flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center">
-            <CheckCircle size={20} className="text-green-600" />
-          </div>
-          <div>
-            <div className="text-2xl font-bold text-green-600">{healthyCount}</div>
-            <div className="text-xs text-gray-500">{t(lang, '正常稼働中', 'Healthy')}</div>
-          </div>
-        </div>
-        <div className="bg-white rounded-xl border border-gray-100 p-4 shadow-sm flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-yellow-100 flex items-center justify-center">
-            <AlertTriangle size={20} className="text-yellow-600" />
-          </div>
-          <div>
-            <div className="text-2xl font-bold text-yellow-600">{degradedCount}</div>
-            <div className="text-xs text-gray-500">{t(lang, '低下中', 'Degraded')}</div>
-          </div>
-        </div>
-        <div className="bg-white rounded-xl border border-gray-100 p-4 shadow-sm flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center">
-            <AlertTriangle size={20} className="text-red-600" />
-          </div>
-          <div>
-            <div className="text-2xl font-bold text-red-600">{downCount}</div>
-            <div className="text-xs text-gray-500">{t(lang, 'ダウン', 'Down')}</div>
-          </div>
-        </div>
+        <StatCard label={t(lang, '正常稼働中', 'Healthy')}  value={healthyCount}  icon={CheckCircle}  color="#10b981" />
+        <StatCard label={t(lang, '低下中', 'Degraded')}     value={degradedCount} icon={AlertTriangle} color="#f59e0b" />
+        <StatCard label={t(lang, 'ダウン', 'Down')}         value={downCount}     icon={XCircle}      color="#ef4444" />
       </div>
 
       {/* Service Cards */}

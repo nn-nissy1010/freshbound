@@ -6,6 +6,7 @@ import { t } from '@/lib/i18n';
 import StatusBadge from '@/components/admin/StatusBadge';
 import FilterBar from '@/components/admin/FilterBar';
 import { Download, ChevronLeft, ChevronRight, CreditCard, DollarSign, FileText, AlertCircle } from 'lucide-react';
+import StatCard from '@/components/admin/StatCard';
 
 const invoices = [
   { id: 'INV-2025-0510', tenant: 'グロースSaaS株式会社', stripeInvoiceId: 'in_1PaXxYAbc123', amount: '¥500,000', currency: 'JPY', status: 'paid', plan: 'enterprise', billingReason: 'subscription_cycle', paidAt: '2025/05/10 09:15', period: '2025/05/01 〜 2025/05/31' },
@@ -18,12 +19,6 @@ const invoices = [
   { id: 'INV-2025-0503', tenant: '合同会社フューチャーズ', stripeInvoiceId: 'in_1PaXxYVwx234', amount: '¥200,000', currency: 'JPY', status: 'canceled', plan: 'standard', billingReason: 'subscription_update', paidAt: '—', period: '2025/04/01 〜 2025/04/30' },
 ];
 
-const statusMap: Record<string, { label: string; bg: string; text: string }> = {
-  paid:     { label: 'paid',     bg: '#dcfce7', text: '#16a34a' },
-  past_due: { label: 'past_due', bg: '#fee2e2', text: '#dc2626' },
-  canceled: { label: 'canceled', bg: '#f3f4f6', text: '#6b7280' },
-  open:     { label: 'open',     bg: '#dbeafe', text: '#2563eb' },
-};
 
 export default function InvoicesPage() {
   const { lang } = useLang();
@@ -52,34 +47,10 @@ export default function InvoicesPage() {
 
       {/* Summary Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        <div className="bg-white rounded-xl border border-gray-100 p-4 shadow-sm">
-          <div className="flex items-center gap-2 mb-2">
-            <div className="w-7 h-7 rounded-lg bg-blue-50 flex items-center justify-center"><FileText size={14} className="text-blue-500" /></div>
-            <span className="text-xs text-gray-500">{t(lang, '総請求数', 'Total Invoices')}</span>
-          </div>
-          <div className="text-2xl font-bold text-gray-800">{invoices.length}</div>
-        </div>
-        <div className="bg-white rounded-xl border border-gray-100 p-4 shadow-sm">
-          <div className="flex items-center gap-2 mb-2">
-            <div className="w-7 h-7 rounded-lg bg-green-50 flex items-center justify-center"><DollarSign size={14} className="text-green-500" /></div>
-            <span className="text-xs text-gray-500">{t(lang, '今月の収益', 'Revenue (Month)')}</span>
-          </div>
-          <div className="text-2xl font-bold text-gray-800">¥{(totalMRR / 10000).toFixed(0)}<span className="text-sm font-normal text-gray-500">万</span></div>
-        </div>
-        <div className="bg-white rounded-xl border border-gray-100 p-4 shadow-sm">
-          <div className="flex items-center gap-2 mb-2">
-            <div className="w-7 h-7 rounded-lg bg-red-50 flex items-center justify-center"><AlertCircle size={14} className="text-red-500" /></div>
-            <span className="text-xs text-gray-500">{t(lang, '未払い', 'Past Due')}</span>
-          </div>
-          <div className="text-2xl font-bold text-red-600">{pastDueCount}</div>
-        </div>
-        <div className="bg-white rounded-xl border border-gray-100 p-4 shadow-sm">
-          <div className="flex items-center gap-2 mb-2">
-            <div className="w-7 h-7 rounded-lg bg-purple-50 flex items-center justify-center"><CreditCard size={14} className="text-purple-500" /></div>
-            <span className="text-xs text-gray-500">{t(lang, '支払い済み', 'Paid')}</span>
-          </div>
-          <div className="text-2xl font-bold text-green-600">{invoices.filter(i => i.status === 'paid').length}</div>
-        </div>
+        <StatCard label={t(lang, '総請求数', 'Total Invoices')}       value={invoices.length}                                    icon={FileText}    />
+        <StatCard label={t(lang, '今月の収益', 'Revenue (Month)')}     value={`¥${(totalMRR / 10000).toFixed(0)}万`}             icon={DollarSign}  />
+        <StatCard label={t(lang, '未払い', 'Past Due')}                value={pastDueCount}                                       icon={AlertCircle} />
+        <StatCard label={t(lang, '支払い済み', 'Paid')}                value={invoices.filter(i => i.status === 'paid').length}   icon={CreditCard}  />
       </div>
 
       <FilterBar
@@ -109,9 +80,7 @@ export default function InvoicesPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50">
-              {filtered.map(inv => {
-                const s = statusMap[inv.status] ?? statusMap.open;
-                return (
+              {filtered.map(inv => (
                   <tr key={inv.id} className="hover:bg-gray-50 transition-colors">
                     <td className="px-4 py-3">
                       <div className="text-xs font-mono text-gray-700">{inv.id}</div>
@@ -122,7 +91,7 @@ export default function InvoicesPage() {
                     <td className="px-3 py-3"><StatusBadge status={inv.plan} /></td>
                     <td className="px-3 py-3 text-sm font-bold text-gray-800 text-right">{inv.amount}</td>
                     <td className="px-3 py-3">
-                      <span className="text-xs px-2 py-0.5 rounded-full font-medium" style={{ backgroundColor: s.bg, color: s.text }}>{s.label}</span>
+                      <StatusBadge status={inv.status} />
                     </td>
                     <td className="px-3 py-3 text-xs text-gray-500">{inv.billingReason}</td>
                     <td className="px-3 py-3 text-xs text-gray-500 whitespace-nowrap">{inv.paidAt}</td>
@@ -132,8 +101,7 @@ export default function InvoicesPage() {
                       </button>
                     </td>
                   </tr>
-                );
-              })}
+              ))}
             </tbody>
           </table>
         </div>
