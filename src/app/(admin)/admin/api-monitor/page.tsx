@@ -30,18 +30,6 @@ const services = [
     color: '#10b981',
   },
   {
-    name: '[TBD] 企業発掘',
-    status: 'degraded',
-    latency: '1,200ms',
-    dailyUsage: 9100,
-    dailyLimit: 10000,
-    usagePct: 91.0,
-    errors: 45,
-    errorRate: '0.5%',
-    lastCheck: '1分前',
-    color: '#f59e0b',
-  },
-  {
     name: 'Prospeo',
     status: 'healthy',
     latency: '88ms',
