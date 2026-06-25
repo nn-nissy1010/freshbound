@@ -8,7 +8,7 @@ import { t } from '@/lib/i18n';
 import {
   LayoutDashboard, Building2, Users, Mail, FileText,
   Ban, Plug, BarChart2, Settings, Shield, ChevronDown,
-  ChevronRight, Globe, Store, X,
+  ChevronRight, Globe, Store, X, Activity,
 } from 'lucide-react';
 
 interface NavItem {
@@ -35,10 +35,10 @@ const navItems: NavItem[] = [
     ],
   },
   { href: '/admin/users', labelJa: 'ユーザー管理', labelEn: 'Users', icon: Users },
+  { href: '/admin/pipeline', labelJa: 'パイプライン監視', labelEn: 'Pipeline Monitor', icon: Activity },
   {
-    labelJa: '配信監視', labelEn: 'Delivery', icon: Mail,
+    labelJa: 'メール配信監視', labelEn: 'Email Delivery', icon: Mail,
     children: [
-      { href: '/admin/campaigns', labelJa: 'キャンペーン', labelEn: 'Campaigns' },
       { href: '/admin/email-logs', labelJa: 'メールログ', labelEn: 'Email Logs' },
       { href: '/admin/compliance', labelJa: '配信停止', labelEn: 'Unsubscribes' },
     ],
