@@ -28,8 +28,8 @@ export default function AgenciesPage() {
   );
 
   return (
-    <div className="p-6">
-      <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between mb-5">
+    <div className="p-6 space-y-5">
+      <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
         <div>
           <h1 className="text-xl font-bold text-gray-800">{t(lang, '代理店管理', 'Agency Management')}</h1>
           <p className="text-sm text-gray-500 mt-0.5">{t(lang, '販売代理店・リセラーの管理と収益追跡', 'Manage resellers and track revenue')}</p>
@@ -40,7 +40,7 @@ export default function AgenciesPage() {
         </button>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         <StatCard label={t(lang, '総代理店数', 'Total Agencies')} value="4" icon={Store} color="#3b82f6" />
         <StatCard label={t(lang, '管理テナント数', 'Managed Tenants')} value="27" icon={Users} color="#10b981" />
         <StatCard label={t(lang, '代理店経由MRR', 'Agency MRR')} value="¥5.4M" icon={DollarSign} color="#f59e0b" />
@@ -85,9 +85,9 @@ export default function AgenciesPage() {
                   <td className="px-3 py-3 text-xs text-gray-500">{agency.joined}</td>
                   <td className="px-3 py-3">
                     {agency.status === 'active' ? (
-                      <button className="flex items-center gap-1 text-xs border border-amber-200 text-amber-700 rounded-lg px-2 py-1 hover:bg-amber-50 font-medium">
+                      <button className="flex items-center gap-1 text-xs border border-blue-200 text-blue-700 rounded-lg px-2 py-1 hover:bg-blue-50 font-medium">
                         <LogIn size={11} />
-                        {t(lang, 'なりすまし', 'Impersonate')}
+                        {t(lang, 'テナント画面を確認', 'View as Tenant')}
                       </button>
                     ) : (
                       <span className="text-xs text-gray-300">—</span>
