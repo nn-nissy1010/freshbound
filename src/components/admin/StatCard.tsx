@@ -6,22 +6,17 @@ interface Props {
   label: string;
   value: string | number;
   sub?: string;
-  icon: LucideIcon;
+  icon?: LucideIcon;
   color?: string;
   trend?: string;
   trendUp?: boolean;
 }
 
-const BADGE_BLUE = '#3b82f6';
-
-export default function StatCard({ label, value, sub, icon: Icon, color = '#3b82f6', trend, trendUp }: Props) {
+export default function StatCard({ label, value, sub, trend, trendUp }: Props) {
   return (
     <div className="bg-white rounded-xl border border-gray-100 p-4 shadow-sm">
-      <div className="flex items-center justify-between mb-2">
+      <div className="mb-2">
         <span className="text-xs text-gray-500">{label}</span>
-        <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ backgroundColor: BADGE_BLUE + '18' }}>
-          <Icon size={14} style={{ color: BADGE_BLUE }} />
-        </div>
       </div>
       <div className="flex items-baseline gap-1">
         <span className="text-2xl font-bold text-gray-900">{value}</span>
