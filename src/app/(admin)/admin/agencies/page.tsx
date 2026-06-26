@@ -6,7 +6,7 @@ import { t } from '@/lib/i18n';
 import StatusBadge from '@/components/admin/StatusBadge';
 import FilterBar from '@/components/admin/FilterBar';
 import StatCard from '@/components/admin/StatCard';
-import { Store, Users, DollarSign, Plus, MoreVertical, LogIn, Pencil, X, CheckCircle } from 'lucide-react';
+import { Store, Users, DollarSign, Plus, Pencil, X } from 'lucide-react';
 
 const agencies = [
   { id: 'AG001', name: 'Agency A 株式会社', contact: 'agency-a@example.com', tenants: 12, revenue: '¥2,400,000', commission: '10%', status: 'active', joined: '2024/10/01' },
@@ -66,7 +66,6 @@ export default function AgenciesPage() {
                 <th className="text-right text-xs font-medium text-gray-500 px-3 py-3">{t(lang, 'コミッション率', 'Commission')}</th>
                 <th className="text-left text-xs font-medium text-gray-500 px-3 py-3">{t(lang, 'ステータス', 'Status')}</th>
                 <th className="text-left text-xs font-medium text-gray-500 px-3 py-3">{t(lang, '登録日', 'Joined')}</th>
-                <th className="text-left text-xs font-medium text-gray-500 px-3 py-3">{t(lang, 'ポータルアクセス', 'Portal Access')}</th>
                 <th className="px-3 py-3"></th>
               </tr>
             </thead>
@@ -83,16 +82,6 @@ export default function AgenciesPage() {
                   <td className="px-3 py-3 text-sm text-gray-700 text-right">{agency.commission}</td>
                   <td className="px-3 py-3"><StatusBadge status={agency.status} /></td>
                   <td className="px-3 py-3 text-xs text-gray-500">{agency.joined}</td>
-                  <td className="px-3 py-3">
-                    {agency.status === 'active' ? (
-                      <button className="flex items-center gap-1 text-xs border border-blue-200 text-blue-700 rounded-lg px-2 py-1 hover:bg-blue-50 font-medium">
-                        <LogIn size={11} />
-                        {t(lang, 'テナント画面を確認', 'View as Tenant')}
-                      </button>
-                    ) : (
-                      <span className="text-xs text-gray-300">—</span>
-                    )}
-                  </td>
                   <td className="px-3 py-3">
                     <button onClick={() => setModalAgency(agency)} className="p-1 hover:bg-gray-100 rounded text-gray-400">
                       <Pencil size={14} />

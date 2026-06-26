@@ -6,7 +6,6 @@ import { t } from '@/lib/i18n';
 import FilterBar from '@/components/admin/FilterBar';
 import { Download, ChevronLeft, ChevronRight, Shield, AlertTriangle, Info } from 'lucide-react';
 import StatCard from '@/components/admin/StatCard';
-import StatusBadge from '@/components/admin/StatusBadge';
 
 const auditLogs = [
   { id: 'AUD-1001', admin: 'System Admin', action: 'impersonate_tenant', target: '株式会社テックスタート (T001)', ip: '203.0.113.1', time: '2025/05/10 11:32', severity: 'high' },
@@ -87,7 +86,6 @@ export default function AuditLogsPage() {
                 <th className="text-left text-xs font-medium text-gray-500 px-3 py-3">{t(lang, '管理者', 'Admin')}</th>
                 <th className="text-left text-xs font-medium text-gray-500 px-3 py-3">{t(lang, 'アクション', 'Action')}</th>
                 <th className="text-left text-xs font-medium text-gray-500 px-3 py-3">{t(lang, '対象', 'Target')}</th>
-                <th className="text-left text-xs font-medium text-gray-500 px-3 py-3">{t(lang, '重要度', 'Severity')}</th>
                 <th className="text-left text-xs font-medium text-gray-500 px-3 py-3">IP</th>
                 <th className="text-left text-xs font-medium text-gray-500 px-3 py-3">{t(lang, '時刻', 'Time')}</th>
               </tr>
@@ -108,9 +106,6 @@ export default function AuditLogsPage() {
                     </td>
                     <td className="px-3 py-2.5 text-xs font-medium text-gray-700">{actionLabel}</td>
                     <td className="px-3 py-2.5 text-xs text-gray-600 max-w-[220px] truncate">{log.target}</td>
-                    <td className="px-3 py-2.5">
-                      <StatusBadge status={log.severity} />
-                    </td>
                     <td className="px-3 py-2.5 text-xs font-mono text-gray-400">{log.ip}</td>
                     <td className="px-3 py-2.5 text-xs text-gray-400 whitespace-nowrap">{log.time}</td>
                   </tr>
