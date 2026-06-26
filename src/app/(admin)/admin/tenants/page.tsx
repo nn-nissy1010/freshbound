@@ -120,7 +120,7 @@ export default function TenantsPage() {
                             <Eye size={12} />{t(lang, '詳細を見る', 'View Detail')}
                           </a>
                           <button className="flex items-center gap-2 px-3 py-2 text-xs text-gray-700 hover:bg-gray-50 w-full">
-                            <UserCheck size={12} />{t(lang, 'なりすまし', 'Impersonate')}
+                            <UserCheck size={12} />{t(lang, 'アクセス', 'Impersonate')}
                           </button>
                           <button className="flex items-center gap-2 px-3 py-2 text-xs text-gray-700 hover:bg-gray-50 w-full">
                             <TrendingUp size={12} />{t(lang, 'プランアップグレード', 'Upgrade Plan')}

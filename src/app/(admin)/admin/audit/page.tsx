@@ -22,7 +22,7 @@ const auditLogs = [
 
 
 const actionLabels: Record<string, { ja: string; en: string }> = {
-  impersonate_tenant:    { ja: 'テナントなりすまし', en: 'Tenant Impersonation' },
+  impersonate_tenant:    { ja: 'テナントアクセス', en: 'Tenant Impersonation' },
   plan_upgrade:          { ja: 'プランアップグレード', en: 'Plan Upgrade' },
   password_reset:        { ja: 'パスワードリセット', en: 'Password Reset' },
   tenant_suspended:      { ja: 'テナント停止', en: 'Tenant Suspended' },

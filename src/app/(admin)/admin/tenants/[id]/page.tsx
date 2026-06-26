@@ -30,7 +30,7 @@ const campaigns = [
 export default function TenantDetailPage({ params }: { params: { id: string } }) {
   const { lang } = useLang();
   const [editing, setEditing] = useState(false);
-  const tenantStatus = 'active';
+  const tenantStatus: string = 'active';
 
   return (
     <div className="p-6 space-y-5">
@@ -53,7 +53,7 @@ export default function TenantDetailPage({ params }: { params: { id: string } })
             <Pencil size={13} />{editing ? t(lang, '編集中', 'Editing') : t(lang, '編集', 'Edit')}
           </button>
           <button className="flex items-center gap-1.5 text-xs border border-gray-200 rounded-lg px-3 py-2 bg-white hover:bg-gray-50 text-gray-600">
-            <UserCheck size={13} />{t(lang, 'なりすまし', 'Impersonate')}
+            <UserCheck size={13} />{t(lang, 'アクセス', 'Impersonate')}
           </button>
           {tenantStatus === 'suspended' ? (
             <button className="flex items-center gap-1.5 text-xs border border-green-200 rounded-lg px-3 py-2 bg-white hover:bg-green-50 text-green-600">
