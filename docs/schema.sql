@@ -1,499 +1,565 @@
-/*
- Navicat Premium Dump SQL
+-- ============================================================
+-- FreshBound — PostgreSQL Schema (Supabase)
+-- ============================================================
+-- 作成日: 2026-06-16
+-- 対象DB: Supabase (PostgreSQL 15+)
+--
+-- RLSポリシー方針:
+--   - テナントスコープテーブル: tenant_id が auth.users に紐づくユーザーのものと一致する行のみ許可
+--   - 管理者専用テーブル (agencies / agency_tenants / invoices): USING (false) で全ロールを拒否
+--       → サービスロールキーは RLS をバイパスするため管理者操作は引き続き可能
+--   - tenants: 自テナントのレコードのみ SELECT 可、変更はサービスロールのみ
+--   - users: 自レコードのみ SELECT 可
+-- ============================================================
 
- Source Server         : mysql
- Source Server Type    : MySQL
- Source Server Version : 100427 (10.4.27-MariaDB)
- Source Host           : localhost:3306
- Source Schema         : aisaas
+-- ============================================================
+-- Table: tenants
+-- ============================================================
+CREATE TABLE tenants (
+  id                     uuid         NOT NULL DEFAULT gen_random_uuid(),
+  name                   varchar(255) NOT NULL,
+  plan                   varchar(100),
+  stripe_customer_id     varchar(255),
+  stripe_subscription_id varchar(255),
+  subscription_status    varchar(50)  NOT NULL DEFAULT 'active',
+  created_at             timestamptz  NOT NULL DEFAULT now(),
+  CONSTRAINT pk_tenants PRIMARY KEY (id)
+);
 
- Target Server Type    : MySQL
- Target Server Version : 100427 (10.4.27-MariaDB)
- File Encoding         : 65001
+CREATE INDEX idx_tenants_stripe_customer     ON tenants (stripe_customer_id);
+CREATE INDEX idx_tenants_stripe_subscription ON tenants (stripe_subscription_id);
+CREATE INDEX idx_tenants_subscription_status ON tenants (subscription_status);
 
- Date: 02/06/2026 01:31:58
-*/
+ALTER TABLE tenants ENABLE ROW LEVEL SECURITY;
+-- 自テナントのレコードのみ参照可。作成・更新・削除はサービスロール専用。
+CREATE POLICY "tenants_select_own" ON tenants
+  FOR SELECT
+  USING (
+    id IN (
+      SELECT tenant_id FROM public.users WHERE auth_user_id = auth.uid()
+    )
+  );
 
-SET NAMES utf8mb4;
-SET FOREIGN_KEY_CHECKS = 0;
+-- ============================================================
+-- Table: agencies  ※管理者専用 — サービスロールのみアクセス可
+-- ============================================================
+CREATE TABLE agencies (
+  id         uuid         NOT NULL DEFAULT gen_random_uuid(),
+  name       varchar(255) NOT NULL,
+  created_at timestamptz  NOT NULL DEFAULT now(),
+  CONSTRAINT pk_agencies PRIMARY KEY (id)
+);
 
--- ----------------------------
--- Table structure for agencies
--- ----------------------------
-DROP TABLE IF EXISTS `agencies`;
-CREATE TABLE `agencies`  (
-  `id` char(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
-  `name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
-  `created_at` datetime NULL DEFAULT current_timestamp,
-  PRIMARY KEY (`id`) USING BTREE
-) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = Dynamic;
+ALTER TABLE agencies ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "agencies_deny_all" ON agencies FOR ALL USING (false);
 
--- ----------------------------
--- Records of agencies
--- ----------------------------
+-- ============================================================
+-- Table: users
+-- ============================================================
+CREATE TABLE users (
+  id           uuid         NOT NULL DEFAULT gen_random_uuid(),
+  tenant_id    uuid         NOT NULL,
+  auth_user_id uuid         NOT NULL,
+  email        varchar(255) NOT NULL,
+  role         varchar(50)  NOT NULL DEFAULT 'user',
+  created_at   timestamptz  NOT NULL DEFAULT now(),
+  CONSTRAINT pk_users           PRIMARY KEY (id),
+  CONSTRAINT uq_users_email     UNIQUE (email),
+  CONSTRAINT uq_users_auth_user UNIQUE (auth_user_id),
+  CONSTRAINT fk_users_tenant    FOREIGN KEY (tenant_id)    REFERENCES tenants (id)    ON DELETE RESTRICT,
+  CONSTRAINT fk_users_auth      FOREIGN KEY (auth_user_id) REFERENCES auth.users (id) ON DELETE CASCADE
+);
 
--- ----------------------------
--- Table structure for agency_tenants
--- ----------------------------
-DROP TABLE IF EXISTS `agency_tenants`;
-CREATE TABLE `agency_tenants`  (
-  `id` char(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
-  `agency_id` char(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
-  `tenant_id` char(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
-  `role` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT 'owner',
-  `created_at` datetime NULL DEFAULT current_timestamp,
-  PRIMARY KEY (`id`) USING BTREE,
-  UNIQUE INDEX `uq_agency_tenants_agency_tenant`(`agency_id` ASC, `tenant_id` ASC) USING BTREE,
-  INDEX `idx_agency_tenants_agency_id`(`agency_id` ASC) USING BTREE,
-  INDEX `idx_agency_tenants_tenant_id`(`tenant_id` ASC) USING BTREE,
-  UNIQUE INDEX `uq_agency_tenants_tenant_id`(`tenant_id` ASC) USING BTREE,
-  CONSTRAINT `fk_agency_tenants_agency` FOREIGN KEY (`agency_id`) REFERENCES `agencies` (`id`) ON DELETE CASCADE ON UPDATE RESTRICT,
-  CONSTRAINT `fk_agency_tenants_tenant` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`id`) ON DELETE CASCADE ON UPDATE RESTRICT
-) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = DYNAMIC;
+CREATE INDEX idx_users_tenant_id    ON users (tenant_id);
+CREATE INDEX idx_users_auth_user_id ON users (auth_user_id);
 
--- ----------------------------
--- Records of agency_tenants
--- ----------------------------
+ALTER TABLE users ENABLE ROW LEVEL SECURITY;
+-- 自レコードのみ参照可
+CREATE POLICY "users_select_own" ON users
+  FOR SELECT
+  USING (auth_user_id = auth.uid());
 
--- ----------------------------
--- Table structure for companies
--- ----------------------------
-DROP TABLE IF EXISTS `companies`;
-CREATE TABLE `companies`  (
-  `id` char(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
-  `tenant_id` char(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
-  `icp_profile_id` char(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL,
-  `name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
-  `domain` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL,
-  `website` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL,
-  `industry` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL,
-  `employee_size` int NULL DEFAULT NULL,
-  `location` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL,
-  `corporation_number` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL,
-  `source` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL,
-  `raw` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NULL,
-  `created_at` datetime NULL DEFAULT current_timestamp,
-  `ai_delivery_flag` tinyint(1) NOT NULL DEFAULT 0,
-  PRIMARY KEY (`id`) USING BTREE,
-  UNIQUE INDEX `idx_companies_tenant_domain`(`tenant_id` ASC, `domain` ASC) USING BTREE,
-  INDEX `icp_profile_id`(`icp_profile_id` ASC) USING BTREE,
-  CONSTRAINT `companies_ibfk_1` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT,
-  CONSTRAINT `companies_ibfk_2` FOREIGN KEY (`icp_profile_id`) REFERENCES `icp_profiles` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT
-) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = Dynamic;
+-- ============================================================
+-- Table: agency_tenants  ※管理者専用
+-- ============================================================
+CREATE TABLE agency_tenants (
+  id         uuid        NOT NULL DEFAULT gen_random_uuid(),
+  agency_id  uuid        NOT NULL,
+  tenant_id  uuid        NOT NULL,
+  role       varchar(50) NOT NULL DEFAULT 'owner',
+  created_at timestamptz NOT NULL DEFAULT now(),
+  CONSTRAINT pk_agency_tenants        PRIMARY KEY (id),
+  CONSTRAINT uq_agency_tenants_pair   UNIQUE (agency_id, tenant_id),
+  CONSTRAINT uq_agency_tenants_tenant UNIQUE (tenant_id),
+  CONSTRAINT fk_agency_tenants_agency FOREIGN KEY (agency_id) REFERENCES agencies (id) ON DELETE CASCADE,
+  CONSTRAINT fk_agency_tenants_tenant FOREIGN KEY (tenant_id) REFERENCES tenants (id)  ON DELETE CASCADE
+);
 
--- ----------------------------
--- Records of companies
--- ----------------------------
+CREATE INDEX idx_agency_tenants_agency_id ON agency_tenants (agency_id);
+CREATE INDEX idx_agency_tenants_tenant_id ON agency_tenants (tenant_id);
 
--- ----------------------------
--- Table structure for contacts
--- ----------------------------
-DROP TABLE IF EXISTS `contacts`;
-CREATE TABLE `contacts`  (
-  `id` char(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
-  `company_id` char(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL,
-  `tenant_id` char(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
-  `name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL,
-  `email` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL,
-  `role` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL,
-  `confidence` decimal(5, 2) NULL DEFAULT NULL,
-  `is_verified` tinyint(1) NULL DEFAULT 0,
-  `is_deliverable` tinyint(1) NOT NULL DEFAULT 1,
-  `unsubscribed_at` datetime NULL DEFAULT NULL,
-  `unsubscribe_reason` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL,
-  `unsubscribe_token` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL,
-  `created_at` datetime NULL DEFAULT current_timestamp,
-  `source` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL,
-  PRIMARY KEY (`id`) USING BTREE,
-  UNIQUE INDEX `uq_contacts_unsubscribe_token`(`unsubscribe_token` ASC) USING BTREE,
-  INDEX `company_id`(`company_id` ASC) USING BTREE,
-  INDEX `idx_contacts_tenant_email`(`tenant_id` ASC, `email` ASC) USING BTREE,
-  INDEX `idx_contacts_deliverable`(`tenant_id` ASC, `is_deliverable` ASC) USING BTREE,
-  CONSTRAINT `contacts_ibfk_1` FOREIGN KEY (`company_id`) REFERENCES `companies` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT,
-  CONSTRAINT `contacts_ibfk_2` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT
-) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = Dynamic;
+ALTER TABLE agency_tenants ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "agency_tenants_deny_all" ON agency_tenants FOR ALL USING (false);
 
--- ----------------------------
--- Records of contacts
--- ----------------------------
+-- ============================================================
+-- Table: icp_profiles
+-- ============================================================
+CREATE TABLE icp_profiles (
+  id                uuid         NOT NULL DEFAULT gen_random_uuid(),
+  tenant_id         uuid         NOT NULL,
+  name              varchar(255) NOT NULL,
+  industry_codes    jsonb,
+  employee_size_min integer,
+  employee_size_max integer,
+  region_codes      jsonb,
+  budget_range      varchar(100),
+  target_roles      jsonb,
+  search_params     jsonb,
+  created_at        timestamptz  NOT NULL DEFAULT now(),
+  updated_at        timestamptz  NOT NULL DEFAULT now(),
+  CONSTRAINT pk_icp_profiles       PRIMARY KEY (id),
+  CONSTRAINT fk_icp_profiles_tenant FOREIGN KEY (tenant_id) REFERENCES tenants (id) ON DELETE RESTRICT
+);
 
--- ----------------------------
--- Table structure for csv_imports
--- ----------------------------
-DROP TABLE IF EXISTS `csv_imports`;
-CREATE TABLE `csv_imports`  (
-  `id` char(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
-  `tenant_id` char(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
-  `file_name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL,
-  `total_rows` int NULL DEFAULT NULL,
-  `success_rows` int NULL DEFAULT NULL,
-  `failed_rows` int NULL DEFAULT NULL,
-  `duplicate_rows` int NULL DEFAULT NULL,
-  `mapping` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NULL,
-  `status` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL,
-  `created_at` datetime NULL DEFAULT current_timestamp,
-  PRIMARY KEY (`id`) USING BTREE,
-  INDEX `tenant_id`(`tenant_id` ASC) USING BTREE,
-  CONSTRAINT `csv_imports_ibfk_1` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT
-) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = Dynamic;
+CREATE INDEX idx_icp_profiles_tenant_id ON icp_profiles (tenant_id);
 
--- ----------------------------
--- Records of csv_imports
--- ----------------------------
+ALTER TABLE icp_profiles ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "icp_profiles_tenant_isolation" ON icp_profiles
+  FOR ALL
+  USING (
+    tenant_id IN (
+      SELECT tenant_id FROM public.users WHERE auth_user_id = auth.uid()
+    )
+  );
 
--- ----------------------------
--- Table structure for delivery_logs
--- ----------------------------
-DROP TABLE IF EXISTS `delivery_logs`;
-CREATE TABLE `delivery_logs`  (
-  `id` char(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
-  `tenant_id` char(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
-  `queue_email_id` char(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL,
-  `generated_email_recipient_id` char(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL,
-  `provider` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL,
-  `provider_message_id` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL,
-  `status` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL,
-  `sent_at` datetime NULL DEFAULT current_timestamp,
-  `delivered_at` datetime NULL DEFAULT NULL,
-  `response` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NULL,
-  PRIMARY KEY (`id`) USING BTREE,
-  INDEX `idx_delivery_logs_tenant_sent_at`(`tenant_id` ASC, `sent_at` ASC) USING BTREE,
-  INDEX `idx_delivery_logs_queue_email_id`(`queue_email_id` ASC) USING BTREE,
-  INDEX `idx_delivery_logs_recipient_id`(`generated_email_recipient_id` ASC) USING BTREE,
-  CONSTRAINT `delivery_logs_ibfk_1` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT,
-  CONSTRAINT `fk_delivery_generated_email_recipient` FOREIGN KEY (`generated_email_recipient_id`) REFERENCES `generated_email_recipients` (`id`) ON DELETE SET NULL ON UPDATE NO ACTION,
-  CONSTRAINT `fk_delivery_queue_email` FOREIGN KEY (`queue_email_id`) REFERENCES `queue_emails` (`id`) ON DELETE SET NULL ON UPDATE NO ACTION
-) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = Dynamic;
+-- ============================================================
+-- Table: companies
+-- ============================================================
+CREATE TABLE companies (
+  id                 uuid         NOT NULL DEFAULT gen_random_uuid(),
+  tenant_id          uuid         NOT NULL,
+  icp_profile_id     uuid,
+  name               varchar(255) NOT NULL,
+  domain             varchar(255),
+  website            varchar(255),
+  industry           varchar(255),
+  employee_size      integer,
+  location           varchar(255),
+  corporation_number varchar(100),
+  source             varchar(100),
+  raw                jsonb,
+  ai_delivery_flag   boolean      NOT NULL DEFAULT false,
+  created_at         timestamptz  NOT NULL DEFAULT now(),
+  CONSTRAINT pk_companies              PRIMARY KEY (id),
+  CONSTRAINT uq_companies_tenant_domain UNIQUE (tenant_id, domain),
+  CONSTRAINT fk_companies_tenant        FOREIGN KEY (tenant_id)      REFERENCES tenants     (id) ON DELETE RESTRICT,
+  CONSTRAINT fk_companies_icp_profile   FOREIGN KEY (icp_profile_id) REFERENCES icp_profiles(id) ON DELETE RESTRICT
+);
 
--- ----------------------------
--- Records of delivery_logs
--- ----------------------------
+CREATE INDEX idx_companies_icp_profile_id ON companies (icp_profile_id);
+CREATE INDEX idx_companies_tenant_id      ON companies (tenant_id);
 
--- ----------------------------
--- Table structure for failed_logs
--- ----------------------------
-DROP TABLE IF EXISTS `failed_logs`;
-CREATE TABLE `failed_logs`  (
-  `id` char(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
-  `tenant_id` char(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
-  `queue_email_id` char(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL,
-  `generated_email_id` char(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
-  `generated_email_recipient_id` char(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL,
-  `provider` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT 'sendgrid',
-  `error_code` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL,
-  `error_message` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL,
-  `response` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NULL,
-  `failed_at` datetime NULL DEFAULT current_timestamp,
-  `retryable` tinyint(1) NOT NULL DEFAULT 1,
-  PRIMARY KEY (`id`) USING BTREE,
-  INDEX `idx_failed_logs_tenant_failed_at`(`tenant_id` ASC, `failed_at` ASC) USING BTREE,
-  INDEX `idx_failed_logs_queue_email_id`(`queue_email_id` ASC) USING BTREE,
-  INDEX `idx_failed_logs_generated_email_id`(`generated_email_id` ASC) USING BTREE,
-  INDEX `idx_failed_logs_recipient_id`(`generated_email_recipient_id` ASC) USING BTREE,
-  CONSTRAINT `fk_failed_generated_email` FOREIGN KEY (`generated_email_id`) REFERENCES `generated_emails` (`id`) ON DELETE CASCADE ON UPDATE RESTRICT,
-  CONSTRAINT `fk_failed_generated_email_recipient` FOREIGN KEY (`generated_email_recipient_id`) REFERENCES `generated_email_recipients` (`id`) ON DELETE SET NULL ON UPDATE RESTRICT,
-  CONSTRAINT `fk_failed_queue_email` FOREIGN KEY (`queue_email_id`) REFERENCES `queue_emails` (`id`) ON DELETE SET NULL ON UPDATE RESTRICT,
-  CONSTRAINT `fk_failed_tenant` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`id`) ON DELETE CASCADE ON UPDATE RESTRICT
-) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = DYNAMIC;
+ALTER TABLE companies ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "companies_tenant_isolation" ON companies
+  FOR ALL
+  USING (
+    tenant_id IN (
+      SELECT tenant_id FROM public.users WHERE auth_user_id = auth.uid()
+    )
+  );
 
--- ----------------------------
--- Records of failed_logs
--- ----------------------------
+-- ============================================================
+-- Table: contacts
+-- ============================================================
+CREATE TABLE contacts (
+  id                 uuid         NOT NULL DEFAULT gen_random_uuid(),
+  company_id         uuid,
+  tenant_id          uuid         NOT NULL,
+  name               varchar(255),
+  email              varchar(255),
+  role               varchar(255),
+  confidence         numeric(5,2),
+  is_verified        boolean      NOT NULL DEFAULT false,
+  is_deliverable     boolean      NOT NULL DEFAULT true,
+  unsubscribed_at    timestamptz,
+  unsubscribe_reason varchar(255),
+  unsubscribe_token  varchar(255),
+  source             varchar(100),
+  created_at         timestamptz  NOT NULL DEFAULT now(),
+  CONSTRAINT pk_contacts                   PRIMARY KEY (id),
+  CONSTRAINT uq_contacts_unsubscribe_token UNIQUE (unsubscribe_token),
+  CONSTRAINT fk_contacts_company           FOREIGN KEY (company_id) REFERENCES companies (id) ON DELETE RESTRICT,
+  CONSTRAINT fk_contacts_tenant            FOREIGN KEY (tenant_id)  REFERENCES tenants   (id) ON DELETE RESTRICT
+);
 
--- ----------------------------
--- Table structure for generated_email_recipients
--- ----------------------------
-DROP TABLE IF EXISTS `generated_email_recipients`;
-CREATE TABLE `generated_email_recipients`  (
-  `id` char(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
-  `tenant_id` char(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
-  `generated_email_id` char(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
-  `company_id` char(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
-  `contact_id` char(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL,
-  `recipient_email` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
-  `recipient_name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL,
-  `status` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT 'created',
-  `created_at` datetime NULL DEFAULT current_timestamp,
-  `updated_at` datetime NULL DEFAULT NULL,
-  PRIMARY KEY (`id`) USING BTREE,
-  INDEX `idx_ger_tenant_status`(`tenant_id` ASC, `status` ASC) USING BTREE,
-  INDEX `idx_ger_generated_email_id`(`generated_email_id` ASC) USING BTREE,
-  INDEX `idx_ger_company_id`(`company_id` ASC) USING BTREE,
-  INDEX `idx_ger_contact_id`(`contact_id` ASC) USING BTREE,
-  INDEX `idx_ger_recipient_email`(`recipient_email` ASC) USING BTREE,
-  UNIQUE INDEX `uq_ger_generated_email_recipient_email`(`generated_email_id` ASC, `recipient_email` ASC) USING BTREE,
-  CONSTRAINT `fk_ger_company` FOREIGN KEY (`company_id`) REFERENCES `companies` (`id`) ON DELETE CASCADE ON UPDATE RESTRICT,
-  CONSTRAINT `fk_ger_contact` FOREIGN KEY (`contact_id`) REFERENCES `contacts` (`id`) ON DELETE SET NULL ON UPDATE RESTRICT,
-  CONSTRAINT `fk_ger_generated_email` FOREIGN KEY (`generated_email_id`) REFERENCES `generated_emails` (`id`) ON DELETE CASCADE ON UPDATE RESTRICT,
-  CONSTRAINT `fk_ger_tenant` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`id`) ON DELETE CASCADE ON UPDATE RESTRICT
-) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = DYNAMIC;
+CREATE INDEX idx_contacts_company_id         ON contacts (company_id);
+CREATE INDEX idx_contacts_tenant_email       ON contacts (tenant_id, email);
+CREATE INDEX idx_contacts_tenant_deliverable ON contacts (tenant_id, is_deliverable);
 
--- ----------------------------
--- Records of generated_email_recipients
--- ----------------------------
+ALTER TABLE contacts ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "contacts_tenant_isolation" ON contacts
+  FOR ALL
+  USING (
+    tenant_id IN (
+      SELECT tenant_id FROM public.users WHERE auth_user_id = auth.uid()
+    )
+  );
 
--- ----------------------------
--- Table structure for generated_emails
--- ----------------------------
-DROP TABLE IF EXISTS `generated_emails`;
-CREATE TABLE `generated_emails`  (
-  `id` char(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
-  `tenant_id` char(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
-  `email_type` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT 'outbound',
-  `subject` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL,
-  `body` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL,
-  `generation_prompt` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL,
-  `status` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL,
-  `model` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL,
-  `tokens` int NULL DEFAULT NULL,
-  `metadata` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NULL,
-  `created_at` datetime NULL DEFAULT current_timestamp,
-  `updated_at` datetime NULL DEFAULT NULL,
-  `message_id` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL,
-  PRIMARY KEY (`id`) USING BTREE,
-  INDEX `idx_generated_emails_tenant_status`(`tenant_id` ASC, `status` ASC) USING BTREE,
-  CONSTRAINT `generated_emails_ibfk_1` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT
-) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = Dynamic;
+-- ============================================================
+-- Table: phone_numbers
+-- ============================================================
+CREATE TABLE phone_numbers (
+  id                uuid        NOT NULL DEFAULT gen_random_uuid(),
+  company_id        uuid,
+  tenant_id         uuid        NOT NULL,
+  phone_number      varchar(50),
+  normalized_number varchar(50),
+  source            varchar(100),
+  is_valid          boolean     NOT NULL DEFAULT true,
+  created_at        timestamptz NOT NULL DEFAULT now(),
+  CONSTRAINT pk_phone_numbers  PRIMARY KEY (id),
+  CONSTRAINT fk_phone_company  FOREIGN KEY (company_id) REFERENCES companies (id) ON DELETE RESTRICT,
+  CONSTRAINT fk_phone_tenant   FOREIGN KEY (tenant_id)  REFERENCES tenants   (id) ON DELETE RESTRICT
+);
 
--- ----------------------------
--- Records of generated_emails
--- ----------------------------
+CREATE INDEX idx_phone_numbers_company_id ON phone_numbers (company_id);
+CREATE INDEX idx_phone_numbers_tenant_id  ON phone_numbers (tenant_id);
 
--- ----------------------------
--- Table structure for icp_profiles
--- ----------------------------
-DROP TABLE IF EXISTS `icp_profiles`;
-CREATE TABLE `icp_profiles`  (
-  `id` char(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
-  `tenant_id` char(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
-  `name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
-  `industry_codes` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NULL,
-  `employee_size_min` int NULL DEFAULT NULL,
-  `employee_size_max` int NULL DEFAULT NULL,
-  `region_codes` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NULL,
-  `budget_range` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL,
-  `target_roles` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NULL,
-  `search_params` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NULL,
-  `created_at` datetime NULL DEFAULT current_timestamp,
-  `updated_at` datetime NULL DEFAULT current_timestamp,
-  PRIMARY KEY (`id`) USING BTREE,
-  INDEX `tenant_id`(`tenant_id` ASC) USING BTREE,
-  CONSTRAINT `icp_profiles_ibfk_1` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT
-) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = Dynamic;
+ALTER TABLE phone_numbers ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "phone_numbers_tenant_isolation" ON phone_numbers
+  FOR ALL
+  USING (
+    tenant_id IN (
+      SELECT tenant_id FROM public.users WHERE auth_user_id = auth.uid()
+    )
+  );
 
--- ----------------------------
--- Records of icp_profiles
--- ----------------------------
+-- ============================================================
+-- Table: new_hp_flags
+-- ============================================================
+CREATE TABLE new_hp_flags (
+  id                 uuid         NOT NULL DEFAULT gen_random_uuid(),
+  company_id         uuid,
+  tenant_id          uuid         NOT NULL,
+  domain             varchar(255),
+  whois_created_date date,
+  is_new_hp          boolean,
+  confidence         numeric(5,2),
+  method             varchar(50),
+  status             varchar(50)  NOT NULL DEFAULT 'unknown',
+  created_at         timestamptz  NOT NULL DEFAULT now(),
+  CONSTRAINT pk_new_hp_flags   PRIMARY KEY (id),
+  CONSTRAINT fk_new_hp_company FOREIGN KEY (company_id) REFERENCES companies (id) ON DELETE RESTRICT,
+  CONSTRAINT fk_new_hp_tenant  FOREIGN KEY (tenant_id)  REFERENCES tenants   (id) ON DELETE RESTRICT
+);
 
--- ----------------------------
--- Table structure for invoices
--- ----------------------------
-DROP TABLE IF EXISTS `invoices`;
-CREATE TABLE `invoices`  (
-  `id` char(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
-  `tenant_id` char(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
-  `stripe_invoice_id` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL,
-  `amount` int NOT NULL,
-  `currency` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT 'jpy',
-  `status` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
-  `billing_reason` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL,
-  `paid_at` datetime NULL DEFAULT NULL,
-  `created_at` datetime NOT NULL DEFAULT current_timestamp,
-  PRIMARY KEY (`id`) USING BTREE,
-  UNIQUE INDEX `uk_invoices_stripe_invoice`(`stripe_invoice_id` ASC) USING BTREE,
-  INDEX `idx_invoices_tenant`(`tenant_id` ASC) USING BTREE,
-  INDEX `idx_invoices_status`(`status` ASC) USING BTREE,
-  INDEX `idx_invoices_paid_at`(`paid_at` ASC) USING BTREE,
-  INDEX `idx_invoices_created_at`(`created_at` ASC) USING BTREE,
-  CONSTRAINT `fk_invoices_tenant` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT
-) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = Dynamic;
+CREATE INDEX idx_new_hp_flags_company_id ON new_hp_flags (company_id);
+CREATE INDEX idx_new_hp_flags_tenant_id  ON new_hp_flags (tenant_id);
 
--- ----------------------------
--- Records of invoices
--- ----------------------------
+ALTER TABLE new_hp_flags ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "new_hp_flags_tenant_isolation" ON new_hp_flags
+  FOR ALL
+  USING (
+    tenant_id IN (
+      SELECT tenant_id FROM public.users WHERE auth_user_id = auth.uid()
+    )
+  );
 
--- ----------------------------
--- Table structure for new_hp_flags
--- ----------------------------
-DROP TABLE IF EXISTS `new_hp_flags`;
-CREATE TABLE `new_hp_flags`  (
-  `id` char(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
-  `company_id` char(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL,
-  `tenant_id` char(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
-  `domain` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL,
-  `whois_created_date` date NULL DEFAULT NULL,
-  `is_new_hp` tinyint(1) NULL DEFAULT NULL,
-  `confidence` decimal(5, 2) NULL DEFAULT NULL,
-  `method` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL,
-  `created_at` datetime NULL DEFAULT current_timestamp,
-  `status` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT 'unknown',
-  PRIMARY KEY (`id`) USING BTREE,
-  INDEX `company_id`(`company_id` ASC) USING BTREE,
-  INDEX `tenant_id`(`tenant_id` ASC) USING BTREE,
-  CONSTRAINT `new_hp_flags_ibfk_1` FOREIGN KEY (`company_id`) REFERENCES `companies` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT,
-  CONSTRAINT `new_hp_flags_ibfk_2` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT
-) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = Dynamic;
+-- ============================================================
+-- Table: scores
+-- ============================================================
+CREATE TABLE scores (
+  id              uuid        NOT NULL DEFAULT gen_random_uuid(),
+  company_id      uuid,
+  tenant_id       uuid        NOT NULL,
+  icp_match_score integer,
+  new_hp_bonus    integer,
+  total_score     integer,
+  computed_at     timestamptz NOT NULL DEFAULT now(),
+  CONSTRAINT pk_scores         PRIMARY KEY (id),
+  CONSTRAINT fk_scores_company FOREIGN KEY (company_id) REFERENCES companies (id) ON DELETE RESTRICT,
+  CONSTRAINT fk_scores_tenant  FOREIGN KEY (tenant_id)  REFERENCES tenants   (id) ON DELETE RESTRICT
+);
 
--- ----------------------------
--- Records of new_hp_flags
--- ----------------------------
+CREATE INDEX idx_scores_company_id ON scores (company_id);
+CREATE INDEX idx_scores_tenant_id  ON scores (tenant_id);
 
--- ----------------------------
--- Table structure for phone_numbers
--- ----------------------------
-DROP TABLE IF EXISTS `phone_numbers`;
-CREATE TABLE `phone_numbers`  (
-  `id` char(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
-  `company_id` char(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL,
-  `tenant_id` char(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
-  `phone_number` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL,
-  `normalized_number` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL,
-  `source` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL,
-  `is_valid` tinyint(1) NULL DEFAULT 1,
-  `created_at` datetime NULL DEFAULT current_timestamp,
-  PRIMARY KEY (`id`) USING BTREE,
-  INDEX `company_id`(`company_id` ASC) USING BTREE,
-  INDEX `tenant_id`(`tenant_id` ASC) USING BTREE,
-  CONSTRAINT `phone_numbers_ibfk_1` FOREIGN KEY (`company_id`) REFERENCES `companies` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT,
-  CONSTRAINT `phone_numbers_ibfk_2` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT
-) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = Dynamic;
+ALTER TABLE scores ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "scores_tenant_isolation" ON scores
+  FOR ALL
+  USING (
+    tenant_id IN (
+      SELECT tenant_id FROM public.users WHERE auth_user_id = auth.uid()
+    )
+  );
 
--- ----------------------------
--- Records of phone_numbers
--- ----------------------------
+-- ============================================================
+-- Table: generated_emails
+-- ============================================================
+CREATE TABLE generated_emails (
+  id                uuid         NOT NULL DEFAULT gen_random_uuid(),
+  tenant_id         uuid         NOT NULL,
+  email_type        varchar(50)  NOT NULL DEFAULT 'outbound',
+  subject           text,
+  body              text,
+  generation_prompt text,
+  status            varchar(50),
+  model             varchar(100),
+  tokens            integer,
+  metadata          jsonb,
+  message_id        varchar(255),
+  created_at        timestamptz  NOT NULL DEFAULT now(),
+  updated_at        timestamptz,
+  CONSTRAINT pk_generated_emails  PRIMARY KEY (id),
+  CONSTRAINT fk_generated_tenant  FOREIGN KEY (tenant_id) REFERENCES tenants (id) ON DELETE RESTRICT
+);
 
--- ----------------------------
--- Table structure for queue_emails
--- ----------------------------
-DROP TABLE IF EXISTS `queue_emails`;
-CREATE TABLE `queue_emails`  (
-  `id` char(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
-  `tenant_id` char(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
-  `generated_email_id` char(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
-  `generated_email_recipient_id` char(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
-  `provider` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT 'sendgrid',
-  `to_email` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
-  `from_email` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL,
-  `subject` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL,
-  `body` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL,
-  `scheduled_at` datetime NULL DEFAULT NULL,
-  `status` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT 'queued',
-  `retry_count` int NOT NULL DEFAULT 0,
-  `last_error` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL,
-  `created_at` datetime NULL DEFAULT current_timestamp,
-  `updated_at` datetime NULL DEFAULT NULL,
-  PRIMARY KEY (`id`) USING BTREE,
-  INDEX `idx_queue_tenant_status_scheduled`(`tenant_id` ASC, `status` ASC, `scheduled_at` ASC) USING BTREE,
-  INDEX `idx_queue_generated_email_id`(`generated_email_id` ASC) USING BTREE,
-  INDEX `idx_queue_generated_email_recipient_id`(`generated_email_recipient_id` ASC) USING BTREE,
-  CONSTRAINT `fk_queue_generated_email` FOREIGN KEY (`generated_email_id`) REFERENCES `generated_emails` (`id`) ON DELETE CASCADE ON UPDATE RESTRICT,
-  CONSTRAINT `fk_queue_generated_email_recipient` FOREIGN KEY (`generated_email_recipient_id`) REFERENCES `generated_email_recipients` (`id`) ON DELETE CASCADE ON UPDATE RESTRICT,
-  CONSTRAINT `fk_queue_tenant` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`id`) ON DELETE CASCADE ON UPDATE RESTRICT
-) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = DYNAMIC;
+CREATE INDEX idx_generated_emails_tenant_status ON generated_emails (tenant_id, status);
 
--- ----------------------------
--- Records of queue_emails
--- ----------------------------
+ALTER TABLE generated_emails ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "generated_emails_tenant_isolation" ON generated_emails
+  FOR ALL
+  USING (
+    tenant_id IN (
+      SELECT tenant_id FROM public.users WHERE auth_user_id = auth.uid()
+    )
+  );
 
--- ----------------------------
--- Table structure for reactions
--- ----------------------------
-DROP TABLE IF EXISTS `reactions`;
-CREATE TABLE `reactions`  (
-  `id` char(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
-  `tenant_id` char(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
-  `company_id` char(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL,
-  `contact_id` char(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL,
-  `email_id` char(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL,
-  `generated_email_recipient_id` char(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL,
-  `queue_email_id` char(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL,
-  `type` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL,
-  `body` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL,
-  `occurred_at` datetime NULL DEFAULT current_timestamp,
-  `in_reply_to` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL,
-  PRIMARY KEY (`id`) USING BTREE,
-  INDEX `tenant_id`(`tenant_id` ASC) USING BTREE,
-  INDEX `company_id`(`company_id` ASC) USING BTREE,
-  INDEX `contact_id`(`contact_id` ASC) USING BTREE,
-  INDEX `email_id`(`email_id` ASC) USING BTREE,
-  INDEX `idx_reactions_recipient_id`(`generated_email_recipient_id` ASC) USING BTREE,
-  INDEX `idx_reactions_queue_email_id`(`queue_email_id` ASC) USING BTREE,
-  CONSTRAINT `reactions_ibfk_1` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT,
-  CONSTRAINT `reactions_ibfk_2` FOREIGN KEY (`company_id`) REFERENCES `companies` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT,
-  CONSTRAINT `reactions_ibfk_3` FOREIGN KEY (`contact_id`) REFERENCES `contacts` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT,
-  CONSTRAINT `reactions_ibfk_4` FOREIGN KEY (`email_id`) REFERENCES `generated_emails` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT,
-  CONSTRAINT `fk_reactions_generated_email_recipient` FOREIGN KEY (`generated_email_recipient_id`) REFERENCES `generated_email_recipients` (`id`) ON DELETE SET NULL ON UPDATE NO ACTION,
-  CONSTRAINT `fk_reactions_queue_email` FOREIGN KEY (`queue_email_id`) REFERENCES `queue_emails` (`id`) ON DELETE SET NULL ON UPDATE NO ACTION
-) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = Dynamic;
+-- ============================================================
+-- Table: generated_email_recipients
+-- ============================================================
+CREATE TABLE generated_email_recipients (
+  id                 uuid         NOT NULL DEFAULT gen_random_uuid(),
+  tenant_id          uuid         NOT NULL,
+  generated_email_id uuid         NOT NULL,
+  company_id         uuid         NOT NULL,
+  contact_id         uuid,
+  recipient_email    varchar(255) NOT NULL,
+  recipient_name     varchar(255),
+  status             varchar(50)  NOT NULL DEFAULT 'created',
+  created_at         timestamptz  NOT NULL DEFAULT now(),
+  updated_at         timestamptz,
+  CONSTRAINT pk_ger              PRIMARY KEY (id),
+  CONSTRAINT uq_ger_email        UNIQUE (generated_email_id, recipient_email),
+  CONSTRAINT fk_ger_tenant       FOREIGN KEY (tenant_id)          REFERENCES tenants                   (id) ON DELETE CASCADE,
+  CONSTRAINT fk_ger_gen_email    FOREIGN KEY (generated_email_id) REFERENCES generated_emails          (id) ON DELETE CASCADE,
+  CONSTRAINT fk_ger_company      FOREIGN KEY (company_id)         REFERENCES companies                 (id) ON DELETE CASCADE,
+  CONSTRAINT fk_ger_contact      FOREIGN KEY (contact_id)         REFERENCES contacts                  (id) ON DELETE SET NULL
+);
 
--- ----------------------------
--- Records of reactions
--- ----------------------------
+CREATE INDEX idx_ger_tenant_status      ON generated_email_recipients (tenant_id, status);
+CREATE INDEX idx_ger_generated_email_id ON generated_email_recipients (generated_email_id);
+CREATE INDEX idx_ger_company_id         ON generated_email_recipients (company_id);
+CREATE INDEX idx_ger_contact_id         ON generated_email_recipients (contact_id);
+CREATE INDEX idx_ger_recipient_email    ON generated_email_recipients (recipient_email);
 
--- ----------------------------
--- Table structure for scores
--- ----------------------------
-DROP TABLE IF EXISTS `scores`;
-CREATE TABLE `scores`  (
-  `id` char(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
-  `company_id` char(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL,
-  `tenant_id` char(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
-  `icp_match_score` int NULL DEFAULT NULL,
-  `new_hp_bonus` int NULL DEFAULT NULL,
-  `total_score` int NULL DEFAULT NULL,
-  `computed_at` datetime NULL DEFAULT current_timestamp,
-  PRIMARY KEY (`id`) USING BTREE,
-  INDEX `company_id`(`company_id` ASC) USING BTREE,
-  INDEX `tenant_id`(`tenant_id` ASC) USING BTREE,
-  CONSTRAINT `scores_ibfk_1` FOREIGN KEY (`company_id`) REFERENCES `companies` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT,
-  CONSTRAINT `scores_ibfk_2` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT
-) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = Dynamic;
+ALTER TABLE generated_email_recipients ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "ger_tenant_isolation" ON generated_email_recipients
+  FOR ALL
+  USING (
+    tenant_id IN (
+      SELECT tenant_id FROM public.users WHERE auth_user_id = auth.uid()
+    )
+  );
 
--- ----------------------------
--- Records of scores
--- ----------------------------
+-- ============================================================
+-- Table: queue_emails
+-- ============================================================
+CREATE TABLE queue_emails (
+  id                           uuid         NOT NULL DEFAULT gen_random_uuid(),
+  tenant_id                    uuid         NOT NULL,
+  generated_email_id           uuid         NOT NULL,
+  generated_email_recipient_id uuid         NOT NULL,
+  provider                     varchar(50)  NOT NULL DEFAULT 'sendgrid',
+  to_email                     varchar(255) NOT NULL,
+  from_email                   varchar(255),
+  subject                      text,
+  body                         text,
+  scheduled_at                 timestamptz,
+  status                       varchar(50)  NOT NULL DEFAULT 'queued',
+  retry_count                  integer      NOT NULL DEFAULT 0,
+  last_error                   text,
+  created_at                   timestamptz  NOT NULL DEFAULT now(),
+  updated_at                   timestamptz,
+  CONSTRAINT pk_queue_emails      PRIMARY KEY (id),
+  CONSTRAINT fk_queue_tenant      FOREIGN KEY (tenant_id)                    REFERENCES tenants                   (id) ON DELETE CASCADE,
+  CONSTRAINT fk_queue_gen_email   FOREIGN KEY (generated_email_id)           REFERENCES generated_emails          (id) ON DELETE CASCADE,
+  CONSTRAINT fk_queue_ger         FOREIGN KEY (generated_email_recipient_id) REFERENCES generated_email_recipients(id) ON DELETE CASCADE
+);
 
--- ----------------------------
--- Table structure for tenants
--- ----------------------------
-DROP TABLE IF EXISTS `tenants`;
-CREATE TABLE `tenants`  (
-  `id` char(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
-  `name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
-  `plan` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL,
-  `stripe_customer_id` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL,
-  `stripe_subscription_id` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL,
-  `subscription_status` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT 'active',
-  `created_at` datetime NULL DEFAULT current_timestamp,
-  PRIMARY KEY (`id`) USING BTREE,
-  INDEX `idx_tenants_stripe_customer`(`stripe_customer_id` ASC) USING BTREE,
-  INDEX `idx_tenants_stripe_subscription`(`stripe_subscription_id` ASC) USING BTREE,
-  INDEX `idx_tenants_subscription_status`(`subscription_status` ASC) USING BTREE
-) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = Dynamic;
+CREATE INDEX idx_queue_tenant_status_scheduled ON queue_emails (tenant_id, status, scheduled_at);
+CREATE INDEX idx_queue_generated_email_id      ON queue_emails (generated_email_id);
+CREATE INDEX idx_queue_ger_id                  ON queue_emails (generated_email_recipient_id);
 
--- ----------------------------
--- Records of tenants
--- ----------------------------
+ALTER TABLE queue_emails ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "queue_emails_tenant_isolation" ON queue_emails
+  FOR ALL
+  USING (
+    tenant_id IN (
+      SELECT tenant_id FROM public.users WHERE auth_user_id = auth.uid()
+    )
+  );
 
--- ----------------------------
--- Table structure for users
--- ----------------------------
-DROP TABLE IF EXISTS `users`;
-CREATE TABLE `users`  (
-  `id` char(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
-  `tenant_id` char(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
-  `email` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
-  `password_hash` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL,
-  `role` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT 'user',
-  `created_at` datetime NULL DEFAULT current_timestamp,
-  PRIMARY KEY (`id`) USING BTREE,
-  UNIQUE INDEX `email`(`email` ASC) USING BTREE,
-  INDEX `tenant_id`(`tenant_id` ASC) USING BTREE,
-  CONSTRAINT `users_ibfk_1` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT
-) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = Dynamic;
+-- ============================================================
+-- Table: delivery_logs
+-- ============================================================
+CREATE TABLE delivery_logs (
+  id                           uuid         NOT NULL DEFAULT gen_random_uuid(),
+  tenant_id                    uuid         NOT NULL,
+  queue_email_id               uuid,
+  generated_email_recipient_id uuid,
+  provider                     varchar(50),
+  provider_message_id          varchar(255),
+  status                       varchar(50),
+  sent_at                      timestamptz  NOT NULL DEFAULT now(),
+  delivered_at                 timestamptz,
+  response                     jsonb,
+  CONSTRAINT pk_delivery_logs  PRIMARY KEY (id),
+  CONSTRAINT fk_delivery_tenant FOREIGN KEY (tenant_id)                    REFERENCES tenants                   (id) ON DELETE RESTRICT,
+  CONSTRAINT fk_delivery_queue  FOREIGN KEY (queue_email_id)               REFERENCES queue_emails              (id) ON DELETE SET NULL,
+  CONSTRAINT fk_delivery_ger    FOREIGN KEY (generated_email_recipient_id) REFERENCES generated_email_recipients(id) ON DELETE SET NULL
+);
 
--- ----------------------------
--- Records of users
--- ----------------------------
+CREATE INDEX idx_delivery_logs_tenant_sent_at ON delivery_logs (tenant_id, sent_at);
+CREATE INDEX idx_delivery_logs_queue_id        ON delivery_logs (queue_email_id);
+CREATE INDEX idx_delivery_logs_ger_id          ON delivery_logs (generated_email_recipient_id);
 
-SET FOREIGN_KEY_CHECKS = 1;
+ALTER TABLE delivery_logs ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "delivery_logs_tenant_isolation" ON delivery_logs
+  FOR ALL
+  USING (
+    tenant_id IN (
+      SELECT tenant_id FROM public.users WHERE auth_user_id = auth.uid()
+    )
+  );
+
+-- ============================================================
+-- Table: failed_logs
+-- ============================================================
+CREATE TABLE failed_logs (
+  id                           uuid         NOT NULL DEFAULT gen_random_uuid(),
+  tenant_id                    uuid         NOT NULL,
+  queue_email_id               uuid,
+  generated_email_id           uuid         NOT NULL,
+  generated_email_recipient_id uuid,
+  provider                     varchar(50)  NOT NULL DEFAULT 'sendgrid',
+  error_code                   varchar(100),
+  error_message                text,
+  response                     jsonb,
+  failed_at                    timestamptz  NOT NULL DEFAULT now(),
+  retryable                    boolean      NOT NULL DEFAULT true,
+  CONSTRAINT pk_failed_logs            PRIMARY KEY (id),
+  CONSTRAINT fk_failed_tenant          FOREIGN KEY (tenant_id)                    REFERENCES tenants                   (id) ON DELETE CASCADE,
+  CONSTRAINT fk_failed_queue_email     FOREIGN KEY (queue_email_id)               REFERENCES queue_emails              (id) ON DELETE SET NULL,
+  CONSTRAINT fk_failed_generated_email FOREIGN KEY (generated_email_id)           REFERENCES generated_emails          (id) ON DELETE CASCADE,
+  CONSTRAINT fk_failed_ger             FOREIGN KEY (generated_email_recipient_id) REFERENCES generated_email_recipients(id) ON DELETE SET NULL
+);
+
+CREATE INDEX idx_failed_logs_tenant_failed_at ON failed_logs (tenant_id, failed_at);
+CREATE INDEX idx_failed_logs_queue_id          ON failed_logs (queue_email_id);
+CREATE INDEX idx_failed_logs_generated_id      ON failed_logs (generated_email_id);
+CREATE INDEX idx_failed_logs_ger_id            ON failed_logs (generated_email_recipient_id);
+
+ALTER TABLE failed_logs ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "failed_logs_tenant_isolation" ON failed_logs
+  FOR ALL
+  USING (
+    tenant_id IN (
+      SELECT tenant_id FROM public.users WHERE auth_user_id = auth.uid()
+    )
+  );
+
+-- ============================================================
+-- Table: reactions
+-- ============================================================
+CREATE TABLE reactions (
+  id                           uuid        NOT NULL DEFAULT gen_random_uuid(),
+  tenant_id                    uuid        NOT NULL,
+  company_id                   uuid,
+  contact_id                   uuid,
+  email_id                     uuid,
+  generated_email_recipient_id uuid,
+  queue_email_id               uuid,
+  type                         varchar(50),
+  body                         text,
+  in_reply_to                  varchar(255),
+  occurred_at                  timestamptz NOT NULL DEFAULT now(),
+  CONSTRAINT pk_reactions         PRIMARY KEY (id),
+  CONSTRAINT fk_reactions_tenant  FOREIGN KEY (tenant_id)                    REFERENCES tenants                   (id) ON DELETE RESTRICT,
+  CONSTRAINT fk_reactions_company FOREIGN KEY (company_id)                   REFERENCES companies                 (id) ON DELETE RESTRICT,
+  CONSTRAINT fk_reactions_contact FOREIGN KEY (contact_id)                   REFERENCES contacts                  (id) ON DELETE RESTRICT,
+  CONSTRAINT fk_reactions_email   FOREIGN KEY (email_id)                     REFERENCES generated_emails          (id) ON DELETE RESTRICT,
+  CONSTRAINT fk_reactions_ger     FOREIGN KEY (generated_email_recipient_id) REFERENCES generated_email_recipients(id) ON DELETE SET NULL,
+  CONSTRAINT fk_reactions_queue   FOREIGN KEY (queue_email_id)               REFERENCES queue_emails              (id) ON DELETE SET NULL
+);
+
+CREATE INDEX idx_reactions_tenant_id  ON reactions (tenant_id);
+CREATE INDEX idx_reactions_company_id ON reactions (company_id);
+CREATE INDEX idx_reactions_contact_id ON reactions (contact_id);
+CREATE INDEX idx_reactions_email_id   ON reactions (email_id);
+CREATE INDEX idx_reactions_ger_id     ON reactions (generated_email_recipient_id);
+CREATE INDEX idx_reactions_queue_id   ON reactions (queue_email_id);
+
+ALTER TABLE reactions ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "reactions_tenant_isolation" ON reactions
+  FOR ALL
+  USING (
+    tenant_id IN (
+      SELECT tenant_id FROM public.users WHERE auth_user_id = auth.uid()
+    )
+  );
+
+-- ============================================================
+-- Table: csv_imports
+-- ============================================================
+CREATE TABLE csv_imports (
+  id             uuid         NOT NULL DEFAULT gen_random_uuid(),
+  tenant_id      uuid         NOT NULL,
+  file_name      varchar(255),
+  total_rows     integer,
+  success_rows   integer,
+  failed_rows    integer,
+  duplicate_rows integer,
+  mapping        jsonb,
+  status         varchar(50),
+  created_at     timestamptz  NOT NULL DEFAULT now(),
+  CONSTRAINT pk_csv_imports PRIMARY KEY (id),
+  CONSTRAINT fk_csv_tenant  FOREIGN KEY (tenant_id) REFERENCES tenants (id) ON DELETE RESTRICT
+);
+
+CREATE INDEX idx_csv_imports_tenant_id ON csv_imports (tenant_id);
+
+ALTER TABLE csv_imports ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "csv_imports_tenant_isolation" ON csv_imports
+  FOR ALL
+  USING (
+    tenant_id IN (
+      SELECT tenant_id FROM public.users WHERE auth_user_id = auth.uid()
+    )
+  );
+
+-- ============================================================
+-- Table: invoices  ※管理者専用 — サービスロールのみアクセス可
+-- ============================================================
+CREATE TABLE invoices (
+  id                uuid         NOT NULL DEFAULT gen_random_uuid(),
+  tenant_id         uuid         NOT NULL,
+  stripe_invoice_id varchar(255),
+  amount            integer      NOT NULL,
+  currency          varchar(10)  NOT NULL DEFAULT 'jpy',
+  status            varchar(50)  NOT NULL,
+  billing_reason    varchar(100),
+  paid_at           timestamptz,
+  created_at        timestamptz  NOT NULL DEFAULT now(),
+  CONSTRAINT pk_invoices        PRIMARY KEY (id),
+  CONSTRAINT uq_invoices_stripe UNIQUE (stripe_invoice_id),
+  CONSTRAINT fk_invoices_tenant FOREIGN KEY (tenant_id) REFERENCES tenants (id) ON DELETE RESTRICT
+);
+
+CREATE INDEX idx_invoices_tenant_id  ON invoices (tenant_id);
+CREATE INDEX idx_invoices_status     ON invoices (status);
+CREATE INDEX idx_invoices_paid_at    ON invoices (paid_at);
+CREATE INDEX idx_invoices_created_at ON invoices (created_at);
+
+ALTER TABLE invoices ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "invoices_deny_all" ON invoices FOR ALL USING (false);
