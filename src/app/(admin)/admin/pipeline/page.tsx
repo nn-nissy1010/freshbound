@@ -15,7 +15,6 @@ interface PipelineStep {
   id: number;
   labelJa: string;
   labelEn: string;
-  features: string;
   descJa: string;
   descEn: string;
   icon: React.ElementType;
@@ -31,7 +30,6 @@ const steps: PipelineStep[] = [
     id: 1,
     labelJa: 'リスト抽出・取込',
     labelEn: 'List Extraction & Import',
-    features: 'F-01 / F-02B',
     descJa: 'ICP条件による企業抽出 / CSVインポート',
     descEn: 'ICP-based company extraction / CSV import',
     icon: List,
@@ -45,7 +43,6 @@ const steps: PipelineStep[] = [
     id: 2,
     labelJa: '企業発掘・電話番号取得',
     labelEn: 'Company Discovery & Phone Numbers',
-    features: 'F-02 / F-03A',
     descJa: 'musubu経由で企業リスト取得・電話番号付与',
     descEn: 'Company list via musubu + phone number enrichment',
     icon: Building2,
@@ -59,7 +56,6 @@ const steps: PipelineStep[] = [
     id: 3,
     labelJa: '新規HP判定',
     labelEn: 'New HP Detection',
-    features: 'F-02A',
     descJa: 'WhoisJSONでドメイン登録日を判定・フラグ付与',
     descEn: 'Domain registration date check via WhoisJSON',
     icon: Globe,
@@ -73,7 +69,6 @@ const steps: PipelineStep[] = [
     id: 4,
     labelJa: '担当者発掘',
     labelEn: 'Contact Discovery',
-    features: 'F-03',
     descJa: 'Prospeo APIで担当者メールアドレスを特定',
     descEn: 'Find contact emails via Prospeo API',
     icon: UserSearch,
@@ -87,7 +82,6 @@ const steps: PipelineStep[] = [
     id: 5,
     labelJa: 'AIスコアリング',
     labelEn: 'AI Scoring',
-    features: 'F-04',
     descJa: 'ICPマッチ度・新規HPフラグをもとにスコア算出（0〜100点）',
     descEn: 'Score companies 0–100 based on ICP match + HP flag',
     icon: Star,
@@ -101,7 +95,6 @@ const steps: PipelineStep[] = [
     id: 6,
     labelJa: 'AIメール生成',
     labelEn: 'AI Email Generation',
-    features: 'F-05',
     descJa: 'GPT-4o-miniでパーソナライズメールを自動生成・下書き保存',
     descEn: 'Generate personalized emails via GPT-4o-mini',
     icon: Mail,
@@ -229,7 +222,6 @@ export default function PipelineMonitorPage() {
                           {t(lang, step.labelJa, step.labelEn)}
                         </span>
                       </div>
-                      <span className="text-xs bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded font-mono">{step.features}</span>
                       <StatusBadge status={step.status} label={t(lang, cfg.label, cfg.labelEn)} />
                     </div>
                     <p className="text-xs text-gray-400 mb-2">{t(lang, step.descJa, step.descEn)}</p>

@@ -6,78 +6,12 @@ import StatusBadge from '@/components/admin/StatusBadge';
 import StatCard from '@/components/admin/StatCard';
 import { RefreshCw, AlertTriangle, CheckCircle, Clock, XCircle } from 'lucide-react';
 const services = [
-  {
-    name: 'SendGrid',
-    status: 'healthy',
-    latency: '45ms',
-    dailyUsage: 12450,
-    dailyLimit: 50000,
-    usagePct: 24.9,
-    errors: 12,
-    errorRate: '0.1%',
-    lastCheck: '1分前',
-    color: '#3b82f6',
-  },
-  {
-    name: 'OpenAI (GPT-4)',
-    status: 'healthy',
-    latency: '320ms',
-    dailyUsage: 4820,
-    dailyLimit: 10000,
-    usagePct: 48.2,
-    errors: 3,
-    errorRate: '0.06%',
-    lastCheck: '1分前',
-    color: '#10b981',
-  },
-  {
-    name: 'Prospeo',
-    status: 'healthy',
-    latency: '88ms',
-    dailyUsage: 3500,
-    dailyLimit: 10000,
-    usagePct: 35.0,
-    errors: 0,
-    errorRate: '0%',
-    lastCheck: '1分前',
-    color: '#8b5cf6',
-  },
-  {
-    name: 'WhoisJSON',
-    status: 'healthy',
-    latency: '120ms',
-    dailyUsage: 1200,
-    dailyLimit: 5000,
-    usagePct: 24.0,
-    errors: 0,
-    errorRate: '0%',
-    lastCheck: '2分前',
-    color: '#6366f1',
-  },
-  {
-    name: 'Supabase',
-    status: 'healthy',
-    latency: '12ms',
-    dailyUsage: 28000,
-    dailyLimit: 100000,
-    usagePct: 28.0,
-    errors: 0,
-    errorRate: '0%',
-    lastCheck: '30秒前',
-    color: '#10b981',
-  },
-  {
-    name: 'LINE Notify',
-    status: 'healthy',
-    latency: '65ms',
-    dailyUsage: 320,
-    dailyLimit: 1000,
-    usagePct: 32.0,
-    errors: 0,
-    errorRate: '0%',
-    lastCheck: '2分前',
-    color: '#22c55e',
-  },
+  { name: 'SendGrid',       status: 'healthy', latency: '45ms',  dailyUsage: 12450, dailyLimit: 50000,  usagePct: 24.9, errors: 12, errorRate: '0.1%',  lastCheck: '1分前' },
+  { name: 'OpenAI (GPT-4)', status: 'healthy', latency: '320ms', dailyUsage: 4820,  dailyLimit: 10000,  usagePct: 48.2, errors: 3,  errorRate: '0.06%', lastCheck: '1分前' },
+  { name: 'Prospeo',        status: 'healthy', latency: '88ms',  dailyUsage: 3500,  dailyLimit: 10000,  usagePct: 35.0, errors: 0,  errorRate: '0%',    lastCheck: '1分前' },
+  { name: 'WhoisJSON',      status: 'healthy', latency: '120ms', dailyUsage: 1200,  dailyLimit: 5000,   usagePct: 24.0, errors: 0,  errorRate: '0%',    lastCheck: '2分前' },
+  { name: 'Supabase',       status: 'healthy', latency: '12ms',  dailyUsage: 28000, dailyLimit: 100000, usagePct: 28.0, errors: 0,  errorRate: '0%',    lastCheck: '30秒前' },
+  { name: 'LINE Notify',    status: 'healthy', latency: '65ms',  dailyUsage: 320,   dailyLimit: 1000,   usagePct: 32.0, errors: 0,  errorRate: '0%',    lastCheck: '2分前' },
 ];
 
 export default function APIMonitorPage() {
@@ -162,7 +96,7 @@ export default function APIMonitorPage() {
                   className="h-1.5 rounded-full transition-all"
                   style={{
                     width: `${svc.usagePct}%`,
-                    backgroundColor: svc.usagePct > 85 ? '#ef4444' : svc.usagePct > 60 ? '#f59e0b' : svc.color,
+                    backgroundColor: svc.usagePct > 85 ? '#ef4444' : svc.usagePct > 60 ? '#f59e0b' : '#3b82f6',
                   }}
                 />
               </div>

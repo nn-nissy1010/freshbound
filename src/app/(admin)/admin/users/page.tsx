@@ -156,9 +156,6 @@ export default function UsersPage() {
           <button className="p-1 border border-gray-200 rounded hover:bg-gray-50"><ChevronRight size={14} /></button>
         </div>
       </div>
-      <p className="text-xs text-gray-400 mt-2">
-        ※ {t(lang, '代理店スタッフは担当テナントへの「なりすましログイン」経由でのみアクセス可能です（監査ログに記録されます）', 'Agency staff access assigned tenants via impersonation only (logged in audit trail)')}
-      </p>
 
       {/* Invite User Modal */}
       {showInviteModal && (
