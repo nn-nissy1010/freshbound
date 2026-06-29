@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import Image from 'next/image';
+import { useEffect, useState } from 'react';
 import {
   LayoutDashboard,
   Building2,
@@ -15,7 +16,18 @@ import {
   ChevronDown,
   User,
   X,
+  LogOut,
 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { createClient } from '@/lib/supabase/client';
+
+interface MeInfo {
+  email: string;
+  role: string;
+  tenantName: string;
+  tenantPlan: string | null;
+  tenantId: string;
+}
 
 const navItems = [
   { href: '/dashboard', label: 'ダッシュボード', icon: LayoutDashboard },
@@ -35,6 +47,23 @@ interface SidebarProps {
 
 export default function Sidebar({ isOpen, onClose }: SidebarProps) {
   const pathname = usePathname();
+  const router = useRouter();
+  const [me, setMe] = useState<MeInfo | null>(null);
+  const [menuOpen, setMenuOpen] = useState(false);
+
+  useEffect(() => {
+    fetch('/api/me')
+      .then((r) => r.ok ? r.json() : null)
+      .then((data) => data && setMe(data))
+      .catch(() => {});
+  }, []);
+
+  const handleLogout = async () => {
+    const supabase = createClient();
+    await supabase.auth.signOut();
+    router.push('/login');
+    router.refresh();
+  };
 
   return (
     <aside
@@ -84,22 +113,52 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
       </nav>
 
       {/* Tenant Info */}
-      <div className="px-3 py-3 border-t border-white/10 flex-shrink-0">
+      <div className="px-3 py-3 border-t border-white/10 flex-shrink-0 relative">
         <div className="bg-white/5 rounded-lg px-3 py-2 mb-3">
-          <div className="text-xs text-gray-400">株式会社サンプル</div>
-          <div className="text-xs text-gray-400">プラン：スタンダード</div>
-          <div className="text-xs text-gray-500">ID: tenant_12345</div>
+          <div className="text-xs text-gray-300 font-medium truncate">
+            {me ? me.tenantName : '—'}
+          </div>
+          <div className="text-xs text-gray-400">
+            プラン：{me ? (me.tenantPlan ?? 'トライアル') : '—'}
+          </div>
+          <div className="text-xs text-gray-500 truncate">
+            {me ? `ID: ${me.tenantId.slice(0, 8)}…` : '—'}
+          </div>
         </div>
-        <div className="flex items-center gap-2 px-1">
+
+        {/* Logout dropdown */}
+        {menuOpen && (
+          <div className="absolute bottom-full left-3 right-3 mb-1 bg-white rounded-lg shadow-lg border border-gray-100 overflow-hidden z-50">
+            <button
+              onClick={handleLogout}
+              className="flex items-center gap-2 w-full px-3 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors"
+            >
+              <LogOut size={15} />
+              ログアウト
+            </button>
+          </div>
+        )}
+
+        <button
+          onClick={() => setMenuOpen((v) => !v)}
+          className="flex items-center gap-2 px-1 w-full hover:bg-white/5 rounded-lg py-1 transition-colors"
+        >
           <div className="w-7 h-7 rounded-full bg-blue-500 flex items-center justify-center flex-shrink-0">
             <User size={14} />
           </div>
-          <div className="flex-1 min-w-0">
-            <div className="text-xs font-medium truncate">山田 太郎</div>
-            <div className="text-xs text-gray-400 truncate">営業部</div>
+          <div className="flex-1 min-w-0 text-left">
+            <div className="text-xs font-medium truncate">
+              {me ? me.email : '—'}
+            </div>
+            <div className="text-xs text-gray-400 truncate">
+              {me ? (me.role === 'admin' ? '管理者' : me.role) : '—'}
+            </div>
           </div>
-          <ChevronDown size={14} className="text-gray-400 flex-shrink-0" />
-        </div>
+          <ChevronDown
+            size={14}
+            className={`text-gray-400 flex-shrink-0 transition-transform ${menuOpen ? 'rotate-180' : ''}`}
+          />
+        </button>
       </div>
     </aside>
   );
