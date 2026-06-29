@@ -129,7 +129,7 @@ export default function EmailSettingsPage() {
                       >
                         <span
                           className="absolute top-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform"
-                          style={{ transform: autoSend ? 'translateX(22px)' : 'translateX(2px)' }}
+                          style={{ transform: autoSend ? 'translateX(2px)' : 'translateX(-18px)' }}
                         />
                       </button>
                     </div>
