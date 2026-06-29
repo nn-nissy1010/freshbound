@@ -4,7 +4,7 @@ import { useLang } from '@/components/admin/LangContext';
 import { t } from '@/lib/i18n';
 import StatusBadge from '@/components/admin/StatusBadge';
 import StatCard from '@/components/admin/StatCard';
-import { useState } from 'react';
+import { use, useState } from 'react';
 import {
   ArrowLeft, Mail, Users, Building2, Activity,
   AlertTriangle, StopCircle, RefreshCw, Trash2,
@@ -27,7 +27,8 @@ const campaigns = [
   { name: 'フォローアップシナリオ', status: 'queued', sent: 0, openRate: '—', replyRate: '—' },
 ];
 
-export default function TenantDetailPage({ params }: { params: { id: string } }) {
+export default function TenantDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = use(params);
   const { lang } = useLang();
   const [editing, setEditing] = useState(false);
   const tenantStatus: string = 'active';
@@ -45,7 +46,7 @@ export default function TenantDetailPage({ params }: { params: { id: string } })
             <StatusBadge status="active" />
             <StatusBadge status="standard" />
           </div>
-          <p className="text-xs text-gray-400 font-mono mt-0.5">ID: T001 · {t(lang, '作成日', 'Created')}: 2025/01/15</p>
+          <p className="text-xs text-gray-400 font-mono mt-0.5">ID: {id} · {t(lang, '作成日', 'Created')}: 2025/01/15</p>
         </div>
         {/* Admin Actions */}
         <div className="flex items-center gap-2 flex-wrap">

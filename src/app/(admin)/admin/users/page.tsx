@@ -94,14 +94,10 @@ export default function UsersPage() {
                     )}
                   </td>
                   <td className="px-3 py-3">
-                    {user.role === 'agency_staff' ? (
-                      <StatusBadge status="agency_staff" label={t(lang, '代理店スタッフ', 'Agency Staff')} />
-                    ) : (
-                      <StatusBadge
-                        status={user.role === 'super_admin' ? 'tenant_admin' : 'support'}
-                        label={user.role === 'super_admin' ? t(lang, 'テナント管理者', 'Tenant Admin') : t(lang, 'サポート', 'Support')}
-                      />
-                    )}
+                    {user.role === 'super_admin'   && <StatusBadge status="super_admin"   label={t(lang, 'スーパー管理者', 'Super Admin')} />}
+                    {user.role === 'tenant_admin'  && <StatusBadge status="tenant_admin"  label={t(lang, 'テナント管理者', 'Tenant Admin')} />}
+                    {user.role === 'support'       && <StatusBadge status="support"       label={t(lang, 'サポート', 'Support')} />}
+                    {user.role === 'agency_staff'  && <StatusBadge status="agency_staff"  label={t(lang, '代理店スタッフ', 'Agency Staff')} />}
                   </td>
                   <td className="px-3 py-3 text-xs text-gray-500">{user.lastLogin}</td>
                   <td className="px-3 py-3"><StatusBadge status={user.status} /></td>

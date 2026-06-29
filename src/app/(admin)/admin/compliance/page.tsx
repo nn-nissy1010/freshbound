@@ -18,8 +18,8 @@ const suppressions = [
 ];
 
 const domainWarnings = [
-  { domain: 'unknown-domain.co.jp', tenant: '株式会社クラウドビズ', issue: t('ja', 'ドメイン評判低下', 'Domain reputation drop'), severity: 'high', date: '2025/05/10' },
-  { domain: 'old-company.jp', tenant: 'グロースSaaS株式会社', issue: t('ja', 'バウンス率高騰', 'High bounce rate'), severity: 'medium', date: '2025/05/09' },
+  { domain: 'unknown-domain.co.jp', tenant: '株式会社クラウドビズ', issue: { ja: 'ドメイン評判低下', en: 'Domain reputation drop' }, severity: 'high', date: '2025/05/10' },
+  { domain: 'old-company.jp', tenant: 'グロースSaaS株式会社', issue: { ja: 'バウンス率高騰', en: 'High bounce rate' }, severity: 'medium', date: '2025/05/09' },
 ];
 
 const reasonLabels: Record<string, { ja: string; en: string }> = {
@@ -79,7 +79,7 @@ export default function CompliancePage() {
                   <span className="text-xs text-gray-500">{w.tenant}</span>
                 </div>
                 <div className="flex items-center gap-3">
-                  <span className="text-xs text-red-600">{w.issue}</span>
+                  <span className="text-xs text-red-600">{w.issue[lang]}</span>
                   <button className="text-xs border border-red-200 text-red-600 rounded px-2 py-0.5 hover:bg-red-50">
                     {t(lang, 'ドメインをブラックリスト', 'Blacklist Domain')}
                   </button>

@@ -30,6 +30,7 @@ export default function InvoicesPage() {
     inv.stripeInvoiceId.toLowerCase().includes(search.toLowerCase())
   );
 
+  // 当月フィルターなし（モックは全件5月）— ラベルで「累計」と明示する
   const totalMRR = invoices.filter(i => i.status === 'paid').reduce((sum, i) => sum + parseInt(i.amount.replace(/[^0-9]/g, '')), 0);
   const pastDueCount = invoices.filter(i => i.status === 'past_due').length;
 
@@ -48,7 +49,7 @@ export default function InvoicesPage() {
       {/* Summary Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         <StatCard label={t(lang, '総請求数', 'Total Invoices')}       value={invoices.length}                                    icon={FileText}    />
-        <StatCard label={t(lang, '今月の収益', 'Revenue (Month)')}     value={`¥${(totalMRR / 10000).toFixed(0)}万`}             icon={DollarSign}  />
+        <StatCard label={t(lang, '累計収益（支払済）', 'Total Revenue (Paid)')} value={`¥${(totalMRR / 10000).toFixed(0)}万`} icon={DollarSign}  />
         <StatCard label={t(lang, '未払い', 'Past Due')}                value={pastDueCount}                                       icon={AlertCircle} />
         <StatCard label={t(lang, '支払い済み', 'Paid')}                value={invoices.filter(i => i.status === 'paid').length}   icon={CreditCard}  />
       </div>
