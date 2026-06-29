@@ -1,0 +1,224 @@
+'use client';
+
+import { useState } from 'react';
+import Image from 'next/image';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { Mail, Lock, Eye, EyeOff, Building2, Globe } from 'lucide-react';
+import { createClient } from '@/lib/supabase/client';
+import { signupSchema, type SignupInput } from '@/lib/validations/auth';
+import { useToast } from '@/lib/toast';
+
+export default function SignupPage() {
+  const router = useRouter();
+  const [showPassword, setShowPassword] = useState(false);
+  const { toast } = useToast();
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useForm<SignupInput>({ resolver: zodResolver(signupSchema) });
+
+  const onSubmit = async (data: SignupInput) => {
+    const res = await fetch('/api/auth/signup', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+
+    const json = await res.json() as { error?: string };
+    if (!res.ok) {
+      toast(json.error ?? '登録に失敗しました', 'error');
+      return;
+    }
+
+    const supabase = createClient();
+    const { error: loginError } = await supabase.auth.signInWithPassword({
+      email: data.email,
+      password: data.password,
+    });
+
+    if (loginError) {
+      toast('アカウントは作成されました。ログインページからサインインしてください。', 'info');
+      return;
+    }
+
+    toast('アカウントを作成しました', 'success');
+    router.push('/dashboard');
+    router.refresh();
+  };
+
+  return (
+    <div className="min-h-screen flex" style={{ fontFamily: "'Hiragino Sans', 'Noto Sans JP', sans-serif" }}>
+      {/* Left Panel */}
+      <div
+        className="hidden lg:flex flex-col justify-between w-2/5 p-12 text-white relative overflow-hidden"
+        style={{ background: 'linear-gradient(160deg, #0f1629 0%, #1a2744 50%, #0d2137 100%)' }}
+      >
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute top-20 left-10 w-64 h-64 rounded-full opacity-5"
+            style={{ background: 'radial-gradient(circle, #3b82f6, transparent)' }} />
+          <div className="absolute bottom-40 right-10 w-48 h-48 rounded-full opacity-5"
+            style={{ background: 'radial-gradient(circle, #60a5fa, transparent)' }} />
+          {Array.from({ length: 8 }).map((_, i) =>
+            Array.from({ length: 6 }).map((_, j) => (
+              <div
+                key={`${i}-${j}`}
+                className="absolute w-1 h-1 rounded-full bg-blue-400 opacity-10"
+                style={{ top: `${i * 14 + 5}%`, left: `${j * 18 + 5}%` }}
+              />
+            ))
+          )}
+        </div>
+
+        <div className="flex items-center gap-3 relative z-10">
+          <Image src="/logo.png" alt="Freshbound" width={40} height={40} className="rounded-xl" />
+          <div className="font-bold text-lg leading-tight">Freshbound</div>
+        </div>
+
+        <div className="relative z-10">
+          <h1 className="text-4xl font-bold leading-tight mb-4">
+            BtoB新規開拓を、<br />AIで全自動化。
+          </h1>
+          <p className="text-blue-200 text-sm leading-relaxed mb-10">
+            リスト作成からメール配信、反応検知、商談化まで<br />AIが一気通貫でサポートします。
+          </p>
+          <div className="space-y-5">
+            {[
+              { icon: '🎯', color: '#3b82f6', title: '高精度なターゲット発掘', desc: '新規HP判定や求人情報を活用し、アクティブな企業を抽出' },
+              { icon: '✉️', color: '#10b981', title: 'AIパーソナライズ配信', desc: '企業情報をもとに、AIが最適なメール文面を自動生成' },
+              { icon: '📊', color: '#8b5cf6', title: '反応検知・次アクション提案', desc: '開封・返信を検知し、AIが次のアクションを提案' },
+              { icon: '👥', color: '#f59e0b', title: 'チームで成果を最大化', desc: '複数人での対応・共有が可能なコラボレーション機能' },
+            ].map((item) => (
+              <div key={item.title} className="flex items-start gap-3">
+                <div
+                  className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 text-base"
+                  style={{ backgroundColor: item.color + '22', border: `1px solid ${item.color}44` }}
+                >
+                  {item.icon}
+                </div>
+                <div>
+                  <div className="font-semibold text-sm">{item.title}</div>
+                  <div className="text-blue-300 text-xs mt-0.5">{item.desc}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="relative z-10 text-blue-400 text-xs">© 2026 Freshbound</div>
+      </div>
+
+      {/* Right Panel */}
+      <div className="flex-1 flex flex-col bg-gray-50">
+        <div className="flex justify-end p-4">
+          <button className="flex items-center gap-1.5 text-sm text-gray-600 border border-gray-200 rounded-lg px-3 py-1.5 bg-white hover:bg-gray-50 transition-colors">
+            <Globe size={14} />
+            <span>日本語</span>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M6 9l6 6 6-6" />
+            </svg>
+          </button>
+        </div>
+
+        <div className="flex-1 flex items-center justify-center px-8">
+          <div className="w-full max-w-md">
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
+              <div className="flex flex-col items-center mb-6">
+                <Image src="/logo.png" alt="Freshbound" width={48} height={48} className="rounded-xl mb-3" />
+                <div className="font-bold text-gray-800">Freshbound</div>
+              </div>
+
+              <h2 className="text-xl font-bold text-center text-gray-800 mb-1">新規アカウント登録</h2>
+              <p className="text-sm text-gray-500 text-center mb-6">
+                会社情報を入力してアカウントを作成してください
+              </p>
+
+              <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1.5">会社名</label>
+                  <div className="relative">
+                    <Building2 size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                    <input
+                      {...register('companyName')}
+                      type="text"
+                      placeholder="株式会社〇〇"
+                      className={`w-full pl-9 pr-4 py-2.5 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${errors.companyName ? 'border-red-400 bg-red-50' : 'border-gray-200'}`}
+                    />
+                  </div>
+                  {errors.companyName && <p className="mt-1 text-xs text-red-600">{errors.companyName.message}</p>}
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1.5">メールアドレス</label>
+                  <div className="relative">
+                    <Mail size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                    <input
+                      {...register('email')}
+                      type="email"
+                      placeholder="メールアドレスを入力してください"
+                      className={`w-full pl-9 pr-4 py-2.5 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${errors.email ? 'border-red-400 bg-red-50' : 'border-gray-200'}`}
+                    />
+                  </div>
+                  {errors.email && <p className="mt-1 text-xs text-red-600">{errors.email.message}</p>}
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                    パスワード <span className="text-gray-400 font-normal">（8文字以上）</span>
+                  </label>
+                  <div className="relative">
+                    <Lock size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                    <input
+                      {...register('password')}
+                      type={showPassword ? 'text' : 'password'}
+                      placeholder="パスワードを入力してください"
+                      className={`w-full pl-9 pr-10 py-2.5 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${errors.password ? 'border-red-400 bg-red-50' : 'border-gray-200'}`}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                    >
+                      {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                    </button>
+                  </div>
+                  {errors.password && <p className="mt-1 text-xs text-red-600">{errors.password.message}</p>}
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="w-full py-2.5 rounded-lg text-white font-medium text-sm transition-all hover:opacity-90 active:scale-[0.99] disabled:opacity-60"
+                  style={{ background: 'linear-gradient(135deg, #3b82f6, #2563eb)' }}
+                >
+                  {isSubmitting ? '登録中...' : 'アカウントを作成する'}
+                </button>
+              </form>
+
+              <p className="mt-4 text-center text-sm text-gray-500">
+                既にアカウントをお持ちの方は{' '}
+                <Link href="/login" className="text-blue-600 hover:text-blue-700 font-medium">
+                  ログイン
+                </Link>
+              </p>
+            </div>
+
+            <div className="mt-6 text-center space-y-2">
+              <div className="flex items-center justify-center gap-4 text-xs text-gray-400">
+                <Link href="#" className="hover:text-gray-600">プライバシーポリシー</Link>
+                <Link href="#" className="hover:text-gray-600">利用規約</Link>
+                <Link href="#" className="hover:text-gray-600">特定商取引法に基づく表記</Link>
+                <Link href="#" className="hover:text-gray-600">ヘルプ</Link>
+              </div>
+              <p className="text-xs text-gray-400">© 2026 Freshbound All rights reserved.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
