@@ -2,11 +2,26 @@ import { createServerClient } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
 
 export async function middleware(request: NextRequest) {
+  const { pathname } = request.nextUrl;
+
+  const publicPaths = ['/login', '/signup', '/auth', '/api/auth/signup'];
+  const isPublic = publicPaths.some((p) => pathname.startsWith(p));
+
+  // 環境変数が未設定の場合はミドルウェアをスキップ（ビルド/初期デプロイ時の保護）
+  if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+    if (!isPublic) {
+      const url = request.nextUrl.clone();
+      url.pathname = '/login';
+      return NextResponse.redirect(url);
+    }
+    return NextResponse.next({ request });
+  }
+
   let supabaseResponse = NextResponse.next({ request });
 
   const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    process.env.NEXT_PUBLIC_SUPABASE_URL,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
     {
       cookies: {
         getAll() {
@@ -23,25 +38,18 @@ export async function middleware(request: NextRequest) {
     }
   );
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  const pathname = request.nextUrl.pathname;
-
-  // 未認証ユーザーを /login にリダイレクト（公開ルートを除く）
-  const publicPaths = ['/login', '/auth'];
-  const isPublic = publicPaths.some((p) => pathname.startsWith(p));
+  let user = null;
+  try {
+    const { data } = await supabase.auth.getUser();
+    user = data.user;
+  } catch {
+    // Supabase接続失敗時は未認証として扱う
+  }
 
   if (!user && !isPublic) {
     const url = request.nextUrl.clone();
     url.pathname = '/login';
     return NextResponse.redirect(url);
-  }
-
-  // 管理者ルートは admin ロールのみ許可（実際のロール検証はAPIルートで行う）
-  if (pathname.startsWith('/admin') && user) {
-    // ロール検証はAPIレイヤーで実施
   }
 
   return supabaseResponse;

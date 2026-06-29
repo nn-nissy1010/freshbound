@@ -6,12 +6,12 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Mail, Lock, Eye, EyeOff, Globe } from 'lucide-react';
+import { Mail, Lock, Eye, EyeOff, Building2, Globe } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
-import { loginSchema, type LoginInput } from '@/lib/validations/auth';
+import { signupSchema, type SignupInput } from '@/lib/validations/auth';
 import { useToast } from '@/lib/toast';
 
-export default function LoginPage() {
+export default function SignupPage() {
   const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
   const { toast } = useToast();
@@ -20,16 +20,33 @@ export default function LoginPage() {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
-  } = useForm<LoginInput>({ resolver: zodResolver(loginSchema) });
+  } = useForm<SignupInput>({ resolver: zodResolver(signupSchema) });
 
-  const onSubmit = async (data: LoginInput) => {
-    const supabase = createClient();
-    const { error } = await supabase.auth.signInWithPassword(data);
-    if (error) {
-      toast('メールアドレスまたはパスワードが正しくありません', 'error');
+  const onSubmit = async (data: SignupInput) => {
+    const res = await fetch('/api/auth/signup', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+
+    const json = await res.json() as { error?: string };
+    if (!res.ok) {
+      toast(json.error ?? '登録に失敗しました', 'error');
       return;
     }
-    toast('ログインしました', 'success');
+
+    const supabase = createClient();
+    const { error: loginError } = await supabase.auth.signInWithPassword({
+      email: data.email,
+      password: data.password,
+    });
+
+    if (loginError) {
+      toast('アカウントは作成されました。ログインページからサインインしてください。', 'info');
+      return;
+    }
+
+    toast('アカウントを作成しました', 'success');
     router.push('/dashboard');
     router.refresh();
   };
@@ -102,7 +119,7 @@ export default function LoginPage() {
             <Globe size={14} />
             <span>日本語</span>
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M6 9l6 6 6-6"/>
+              <path d="M6 9l6 6 6-6" />
             </svg>
           </button>
         </div>
@@ -115,16 +132,28 @@ export default function LoginPage() {
                 <div className="font-bold text-gray-800">Freshbound</div>
               </div>
 
-              <h2 className="text-xl font-bold text-center text-gray-800 mb-1">ログイン</h2>
+              <h2 className="text-xl font-bold text-center text-gray-800 mb-1">新規アカウント登録</h2>
               <p className="text-sm text-gray-500 text-center mb-6">
-                アカウントにログインしてダッシュボードにアクセスします
+                会社情報を入力してアカウントを作成してください
               </p>
 
               <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                    メールアドレス
-                  </label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1.5">会社名</label>
+                  <div className="relative">
+                    <Building2 size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                    <input
+                      {...register('companyName')}
+                      type="text"
+                      placeholder="株式会社〇〇"
+                      className={`w-full pl-9 pr-4 py-2.5 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${errors.companyName ? 'border-red-400 bg-red-50' : 'border-gray-200'}`}
+                    />
+                  </div>
+                  {errors.companyName && <p className="mt-1 text-xs text-red-600">{errors.companyName.message}</p>}
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1.5">メールアドレス</label>
                   <div className="relative">
                     <Mail size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
                     <input
@@ -139,7 +168,7 @@ export default function LoginPage() {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                    パスワード
+                    パスワード <span className="text-gray-400 font-normal">（8文字以上）</span>
                   </label>
                   <div className="relative">
                     <Lock size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
@@ -160,30 +189,20 @@ export default function LoginPage() {
                   {errors.password && <p className="mt-1 text-xs text-red-600">{errors.password.message}</p>}
                 </div>
 
-                <div className="flex items-center justify-between">
-                  <label className="flex items-center gap-2 cursor-pointer">
-                    <input type="checkbox" className="w-4 h-4 rounded border-gray-300 text-blue-600" />
-                    <span className="text-sm text-gray-600">ログインしたままにする</span>
-                  </label>
-                  <Link href="#" className="text-sm text-blue-600 hover:text-blue-700">
-                    パスワードをお忘れですか？
-                  </Link>
-                </div>
-
                 <button
                   type="submit"
                   disabled={isSubmitting}
                   className="w-full py-2.5 rounded-lg text-white font-medium text-sm transition-all hover:opacity-90 active:scale-[0.99] disabled:opacity-60"
                   style={{ background: 'linear-gradient(135deg, #3b82f6, #2563eb)' }}
                 >
-                  {isSubmitting ? 'ログイン中...' : 'ログイン'}
+                  {isSubmitting ? '登録中...' : 'アカウントを作成する'}
                 </button>
               </form>
 
               <p className="mt-4 text-center text-sm text-gray-500">
-                アカウントをお持ちでない方は{' '}
-                <Link href="/signup" className="text-blue-600 hover:text-blue-700 font-medium">
-                  新規登録
+                既にアカウントをお持ちの方は{' '}
+                <Link href="/login" className="text-blue-600 hover:text-blue-700 font-medium">
+                  ログイン
                 </Link>
               </p>
             </div>
