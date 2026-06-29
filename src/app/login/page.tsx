@@ -4,18 +4,34 @@ import { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Mail, Lock, Eye, EyeOff, Globe, Shield } from 'lucide-react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { Mail, Lock, Eye, EyeOff, Globe } from 'lucide-react';
+import { createClient } from '@/lib/supabase/client';
+import { loginSchema, type LoginInput } from '@/lib/validations/auth';
+import { useToast } from '@/lib/toast';
 
 export default function LoginPage() {
   const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [rememberMe, setRememberMe] = useState(false);
+  const { toast } = useToast();
 
-  const handleLogin = (e: React.FormEvent) => {
-    e.preventDefault();
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useForm<LoginInput>({ resolver: zodResolver(loginSchema) });
+
+  const onSubmit = async (data: LoginInput) => {
+    const supabase = createClient();
+    const { error } = await supabase.auth.signInWithPassword(data);
+    if (error) {
+      toast('メールアドレスまたはパスワードが正しくありません', 'error');
+      return;
+    }
+    toast('ログインしました', 'success');
     router.push('/dashboard');
+    router.refresh();
   };
 
   return (
@@ -25,13 +41,11 @@ export default function LoginPage() {
         className="hidden lg:flex flex-col justify-between w-2/5 p-12 text-white relative overflow-hidden"
         style={{ background: 'linear-gradient(160deg, #0f1629 0%, #1a2744 50%, #0d2137 100%)' }}
       >
-        {/* Background decoration */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           <div className="absolute top-20 left-10 w-64 h-64 rounded-full opacity-5"
             style={{ background: 'radial-gradient(circle, #3b82f6, transparent)' }} />
           <div className="absolute bottom-40 right-10 w-48 h-48 rounded-full opacity-5"
             style={{ background: 'radial-gradient(circle, #60a5fa, transparent)' }} />
-          {/* Grid dots */}
           {Array.from({ length: 8 }).map((_, i) =>
             Array.from({ length: 6 }).map((_, j) => (
               <div
@@ -43,13 +57,11 @@ export default function LoginPage() {
           )}
         </div>
 
-        {/* Logo */}
         <div className="flex items-center gap-3 relative z-10">
           <Image src="/logo.png" alt="Freshbound" width={40} height={40} className="rounded-xl" />
           <div className="font-bold text-lg leading-tight">Freshbound</div>
         </div>
 
-        {/* Main copy */}
         <div className="relative z-10">
           <h1 className="text-4xl font-bold leading-tight mb-4">
             BtoB新規開拓を、<br />AIで全自動化。
@@ -57,33 +69,12 @@ export default function LoginPage() {
           <p className="text-blue-200 text-sm leading-relaxed mb-10">
             リスト作成からメール配信、反応検知、商談化まで<br />AIが一気通貫でサポートします。
           </p>
-
           <div className="space-y-5">
             {[
-              {
-                icon: '🎯',
-                color: '#3b82f6',
-                title: '高精度なターゲット発掘',
-                desc: '新規HP判定や求人情報を活用し、アクティブな企業を抽出',
-              },
-              {
-                icon: '✉️',
-                color: '#10b981',
-                title: 'AIパーソナライズ配信',
-                desc: '企業情報をもとに、AIが最適なメール文面を自動生成',
-              },
-              {
-                icon: '📊',
-                color: '#8b5cf6',
-                title: '反応検知・次アクション提案',
-                desc: '開封・返信を検知し、AIが次のアクションを提案',
-              },
-              {
-                icon: '👥',
-                color: '#f59e0b',
-                title: 'チームで成果を最大化',
-                desc: '複数人での対応・共有が可能なコラボレーション機能',
-              },
+              { icon: '🎯', color: '#3b82f6', title: '高精度なターゲット発掘', desc: '新規HP判定や求人情報を活用し、アクティブな企業を抽出' },
+              { icon: '✉️', color: '#10b981', title: 'AIパーソナライズ配信', desc: '企業情報をもとに、AIが最適なメール文面を自動生成' },
+              { icon: '📊', color: '#8b5cf6', title: '反応検知・次アクション提案', desc: '開封・返信を検知し、AIが次のアクションを提案' },
+              { icon: '👥', color: '#f59e0b', title: 'チームで成果を最大化', desc: '複数人での対応・共有が可能なコラボレーション機能' },
             ].map((item) => (
               <div key={item.title} className="flex items-start gap-3">
                 <div
@@ -101,14 +92,11 @@ export default function LoginPage() {
           </div>
         </div>
 
-        <div className="relative z-10 text-blue-400 text-xs">
-          © 2026 Freshbound
-        </div>
+        <div className="relative z-10 text-blue-400 text-xs">© 2026 Freshbound</div>
       </div>
 
       {/* Right Panel */}
       <div className="flex-1 flex flex-col bg-gray-50">
-        {/* Language selector */}
         <div className="flex justify-end p-4">
           <button className="flex items-center gap-1.5 text-sm text-gray-600 border border-gray-200 rounded-lg px-3 py-1.5 bg-white hover:bg-gray-50 transition-colors">
             <Globe size={14} />
@@ -119,11 +107,9 @@ export default function LoginPage() {
           </button>
         </div>
 
-        {/* Login form */}
         <div className="flex-1 flex items-center justify-center px-8">
           <div className="w-full max-w-md">
             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
-              {/* Logo (mobile) */}
               <div className="flex flex-col items-center mb-6">
                 <Image src="/logo.png" alt="Freshbound" width={48} height={48} className="rounded-xl mb-3" />
                 <div className="font-bold text-gray-800">Freshbound</div>
@@ -134,7 +120,7 @@ export default function LoginPage() {
                 アカウントにログインしてダッシュボードにアクセスします
               </p>
 
-              <form onSubmit={handleLogin} className="space-y-4">
+              <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1.5">
                     メールアドレス
@@ -142,13 +128,13 @@ export default function LoginPage() {
                   <div className="relative">
                     <Mail size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
                     <input
+                      {...register('email')}
                       type="email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
                       placeholder="メールアドレスを入力してください"
-                      className="w-full pl-9 pr-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                      className={`w-full pl-9 pr-4 py-2.5 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${errors.email ? 'border-red-400 bg-red-50' : 'border-gray-200'}`}
                     />
                   </div>
+                  {errors.email && <p className="mt-1 text-xs text-red-600">{errors.email.message}</p>}
                 </div>
 
                 <div>
@@ -158,11 +144,10 @@ export default function LoginPage() {
                   <div className="relative">
                     <Lock size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
                     <input
+                      {...register('password')}
                       type={showPassword ? 'text' : 'password'}
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
                       placeholder="パスワードを入力してください"
-                      className="w-full pl-9 pr-10 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                      className={`w-full pl-9 pr-10 py-2.5 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${errors.password ? 'border-red-400 bg-red-50' : 'border-gray-200'}`}
                     />
                     <button
                       type="button"
@@ -172,16 +157,12 @@ export default function LoginPage() {
                       {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                     </button>
                   </div>
+                  {errors.password && <p className="mt-1 text-xs text-red-600">{errors.password.message}</p>}
                 </div>
 
                 <div className="flex items-center justify-between">
                   <label className="flex items-center gap-2 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={rememberMe}
-                      onChange={(e) => setRememberMe(e.target.checked)}
-                      className="w-4 h-4 rounded border-gray-300 text-blue-600"
-                    />
+                    <input type="checkbox" className="w-4 h-4 rounded border-gray-300 text-blue-600" />
                     <span className="text-sm text-gray-600">ログインしたままにする</span>
                   </label>
                   <Link href="#" className="text-sm text-blue-600 hover:text-blue-700">
@@ -191,15 +172,22 @@ export default function LoginPage() {
 
                 <button
                   type="submit"
-                  className="w-full py-2.5 rounded-lg text-white font-medium text-sm transition-all hover:opacity-90 active:scale-[0.99]"
+                  disabled={isSubmitting}
+                  className="w-full py-2.5 rounded-lg text-white font-medium text-sm transition-all hover:opacity-90 active:scale-[0.99] disabled:opacity-60"
                   style={{ background: 'linear-gradient(135deg, #3b82f6, #2563eb)' }}
                 >
-                  ログイン
+                  {isSubmitting ? 'ログイン中...' : 'ログイン'}
                 </button>
               </form>
+
+              <p className="mt-4 text-center text-sm text-gray-500">
+                アカウントをお持ちでない方は{' '}
+                <Link href="/signup" className="text-blue-600 hover:text-blue-700 font-medium">
+                  新規登録
+                </Link>
+              </p>
             </div>
 
-            {/* Footer links */}
             <div className="mt-6 text-center space-y-2">
               <div className="flex items-center justify-center gap-4 text-xs text-gray-400">
                 <Link href="#" className="hover:text-gray-600">プライバシーポリシー</Link>
@@ -207,9 +195,7 @@ export default function LoginPage() {
                 <Link href="#" className="hover:text-gray-600">特定商取引法に基づく表記</Link>
                 <Link href="#" className="hover:text-gray-600">ヘルプ</Link>
               </div>
-              <p className="text-xs text-gray-400">
-                © 2026 Freshbound All rights reserved.
-              </p>
+              <p className="text-xs text-gray-400">© 2026 Freshbound All rights reserved.</p>
             </div>
           </div>
         </div>
