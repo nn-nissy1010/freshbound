@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
+import { useToast } from '@/lib/toast';
 import {
   Search, Download, Plus, HelpCircle, Calendar,
   Filter, ChevronLeft, ChevronRight, Trash2, Eye,
@@ -55,42 +56,28 @@ const deliveries = [
 
 
 type DraftEmail = {
-  id: number; company: string; contact: string; contactTitle: string;
+  id: string; company: string; contact: string; contactTitle: string;
   subject: string; body: string; generatedAt: string; score: number;
 };
 
-const draftEmails: DraftEmail[] = [
-  {
-    id: 1, company: '株式会社サンプルテック', contact: '田中 太郎', contactTitle: '営業マネージャー',
-    subject: '【株式会社サンプルテック様へ】IT向け営業支援サービスのご案内',
-    body: `田中 太郎 様\n\nはじめてご連絡いたします。山田と申します。\n\n株式会社サンプルテック様のIT事業への取り組みを拝見し、弊社サービスがお役に立てると考えご連絡いたしました。\n\n15分ほどお時間をいただけますでしょうか。\n\n何卒よろしくお願いいたします。`,
-    generatedAt: '2025/05/10 09:15', score: 87,
-  },
-  {
-    id: 2, company: '株式会社イノベーションズ', contact: '佐藤 花子', contactTitle: '営業部長',
-    subject: '【株式会社イノベーションズ様へ】新規開拓の効率化についてご提案',
-    body: `佐藤 花子 様\n\nはじめてご連絡いたします。山田と申します。\n\n株式会社イノベーションズ様のSaaS事業における営業活動を支援できると考えご連絡いたしました。\n\nお時間をいただけましたら幸いです。`,
-    generatedAt: '2025/05/10 09:18', score: 76,
-  },
-  {
-    id: 3, company: '株式会社グロースパートナー', contact: '鈴木 一郎', contactTitle: '代表取締役',
-    subject: '【株式会社グロースパートナー様へ】コンサル会社向け営業自動化のご提案',
-    body: `鈴木 一郎 様\n\nはじめてご連絡いたします。山田と申します。\n\n株式会社グロースパートナー様の新規開拓を効率化できるサービスをご提供しております。\n\nぜひ一度お話しする機会をいただければ幸いです。`,
-    generatedAt: '2025/05/10 09:20', score: 72,
-  },
-  {
-    id: 4, company: '株式会社デジタルソリューション', contact: '高橋 健', contactTitle: '営業マネージャー',
-    subject: '【株式会社デジタルソリューション様へ】AI営業支援ツールのご紹介',
-    body: `高橋 健 様\n\nはじめてご連絡いたします。山田と申します。\n\nIT・ソフトウェア業界でご活躍の株式会社デジタルソリューション様に、弊社のAI営業支援ツールをご紹介したくご連絡いたしました。\n\nご検討のほどよろしくお願いいたします。`,
-    generatedAt: '2025/05/10 09:22', score: 68,
-  },
-  {
-    id: 5, company: '株式会社フューチャーリンク', contact: '山本 美咲', contactTitle: 'セールス',
-    subject: '【株式会社フューチャーリンク様へ】SaaS企業向け新規開拓支援のご提案',
-    body: `山本 美咲 様\n\nはじめてご連絡いたします。山田と申します。\n\n株式会社フューチャーリンク様のSaaSビジネスの成長を加速させるお手伝いができると考えご連絡いたしました。\n\n30分程度のオンライン相談も可能です。お気軽にご返信ください。`,
-    generatedAt: '2025/05/10 09:25', score: 65,
-  },
-];
+type ApiDraft = {
+  id: string; subject: string | null; body: string | null; status: string | null;
+  createdAt: string; recipientEmail: string; recipientName: string | null;
+  companyId: string; companyName: string | null;
+};
+
+function mapApiDraft(r: ApiDraft): DraftEmail {
+  return {
+    id: r.id,
+    company: r.companyName ?? '',
+    contact: r.recipientName ?? r.recipientEmail ?? '',
+    contactTitle: '',
+    subject: r.subject ?? '',
+    body: r.body ?? '',
+    generatedAt: r.createdAt ? new Date(r.createdAt).toLocaleString('ja-JP') : '',
+    score: 0,
+  };
+}
 
 function StatusBadge({ status }: { status: string }) {
   const colors: Record<string, { bg: string; text: string }> = {
@@ -122,8 +109,40 @@ export default function DeliveryHistoryPage() {
   const [sendMode, setSendMode] = useState<'review' | 'auto'>('review');
   const [activeTab, setActiveTab] = useState<'sent' | 'draft'>('sent');
   const [draftPreview, setDraftPreview] = useState<DraftEmail | null>(null);
-  const [approvedDrafts, setApprovedDrafts] = useState<number[]>([]);
-  const [rejectedDrafts, setRejectedDrafts] = useState<number[]>([]);
+  const [approvedDrafts, setApprovedDrafts] = useState<string[]>([]);
+  const [rejectedDrafts, setRejectedDrafts] = useState<string[]>([]);
+  const [draftEmails, setDraftEmails] = useState<DraftEmail[]>([]);
+  const { toast } = useToast();
+
+  const approveDraft = useCallback((id: string) => {
+    setApprovedDrafts(prev => [...prev, id]);
+    toast('メールを承認しました', 'success');
+  }, [toast]);
+
+  const rejectDraft = useCallback((id: string) => {
+    setRejectedDrafts(prev => [...prev, id]);
+    toast('メールを却下しました', 'info');
+  }, [toast]);
+
+  const approveAll = useCallback(() => {
+    setApprovedDrafts(draftEmails.map(d => d.id));
+    toast(`レビュー待ち全件を承認しました（${draftEmails.length}件）`, 'success');
+  }, [draftEmails, toast]);
+
+  useEffect(() => {
+    const fetchDrafts = async () => {
+      try {
+        const res = await fetch('/api/emails/generate');
+        if (res.ok) {
+          const data = await res.json() as ApiDraft[];
+          setDraftEmails(data.map(mapApiDraft));
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    };
+    fetchDrafts();
+  }, []);
 
   const toggleSelect = (id: number) => {
     setSelected(prev => prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]);
@@ -349,7 +368,7 @@ export default function DeliveryHistoryPage() {
             <span className="text-gray-400">却下：{rejectedDrafts.length}件</span>
           </div>
           <button
-            onClick={() => setApprovedDrafts(draftEmails.map(d => d.id))}
+            onClick={approveAll}
             className="flex items-center gap-2 text-sm rounded-lg px-3 py-2 text-white font-medium"
             style={{ background: 'linear-gradient(135deg, #3b82f6, #2563eb)' }}
           >
@@ -404,11 +423,11 @@ export default function DeliveryHistoryPage() {
                           <Eye size={11} />確認・編集
                         </button>
                         {!isApproved && !isRejected && (<>
-                          <button onClick={() => setApprovedDrafts(prev => [...prev, draft.id])}
+                          <button onClick={() => approveDraft(draft.id)}
                             className="flex items-center gap-1 text-xs border border-green-200 rounded px-2 py-1 hover:bg-green-50 text-green-600">
                             <Check size={11} />承認
                           </button>
-                          <button onClick={() => setRejectedDrafts(prev => [...prev, draft.id])}
+                          <button onClick={() => rejectDraft(draft.id)}
                             className="flex items-center gap-1 text-xs border border-red-200 rounded px-2 py-1 hover:bg-red-50 text-red-500">
                             <X size={11} />却下
                           </button>
@@ -456,12 +475,12 @@ export default function DeliveryHistoryPage() {
               </button>
               <div className="flex items-center gap-2">
                 <button
-                  onClick={() => { setRejectedDrafts(prev => [...prev, draftPreview.id]); setDraftPreview(null); }}
+                  onClick={() => { rejectDraft(draftPreview.id); setDraftPreview(null); }}
                   className="text-sm border border-red-200 rounded-lg px-4 py-2 text-red-500 hover:bg-red-50">
                   却下
                 </button>
                 <button
-                  onClick={() => { setApprovedDrafts(prev => [...prev, draftPreview.id]); setDraftPreview(null); }}
+                  onClick={() => { approveDraft(draftPreview.id); setDraftPreview(null); }}
                   className="flex items-center gap-2 text-sm rounded-lg px-4 py-2 text-white font-medium"
                   style={{ background: 'linear-gradient(135deg, #3b82f6, #2563eb)' }}>
                   <Send size={14} />承認して送信
@@ -640,7 +659,14 @@ export default function DeliveryHistoryPage() {
                 {modalStep === 1 ? 'キャンセル' : '戻る'}
               </button>
               <button
-                onClick={() => modalStep < 3 ? setModalStep((prev) => prev + 1) : setShowNewModal(false)}
+                onClick={() => {
+                  if (modalStep < 3) {
+                    setModalStep((prev) => prev + 1);
+                  } else {
+                    setShowNewModal(false);
+                    toast('配信を開始しました', 'success');
+                  }
+                }}
                 className="flex items-center gap-2 text-sm rounded-lg px-4 py-2 text-white font-medium"
                 style={{ background: 'linear-gradient(135deg, #3b82f6, #2563eb)' }}
               >
