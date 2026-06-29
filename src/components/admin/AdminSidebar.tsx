@@ -8,7 +8,7 @@ import { t } from '@/lib/i18n';
 import {
   LayoutDashboard, Building2, Users, Mail, FileText,
   Ban, Plug, BarChart2, Settings, Shield, ChevronDown,
-  ChevronRight, Globe, Store, X, Activity,
+  ChevronRight, Globe, Store, X, Activity, Database,
 } from 'lucide-react';
 
 interface NavItem {
@@ -30,10 +30,11 @@ const navItems: NavItem[] = [
     labelJa: 'テナント管理', labelEn: 'Tenants', icon: Building2,
     children: [
       { href: '/admin/tenants', labelJa: '顧客一覧', labelEn: 'Customer List' },
-      { href: '/admin/agencies', labelJa: '代理店一覧', labelEn: 'Agency List' },
       { href: '/admin/invoices', labelJa: '請求書', labelEn: 'Invoices' },
     ],
   },
+  { href: '/admin/agencies', labelJa: '代理店管理', labelEn: 'Agencies', icon: Store },
+  { href: '/admin/companies-master', labelJa: '企業マスタ', labelEn: 'Company Master', icon: Database },
   { href: '/admin/users', labelJa: 'ユーザー管理', labelEn: 'Users', icon: Users },
   { href: '/admin/pipeline', labelJa: 'パイプライン監視', labelEn: 'Pipeline Monitor', icon: Activity },
   {
@@ -53,7 +54,7 @@ const navItems: NavItem[] = [
 export default function AdminSidebar({ isOpen, onClose }: SidebarProps) {
   const pathname = usePathname();
   const { lang, setLang } = useLang();
-  const [openGroups, setOpenGroups] = useState<string[]>(['テナント管理', 'Tenants', '配信監視', 'Delivery']);
+  const [openGroups, setOpenGroups] = useState<string[]>(['テナント管理', 'メール配信監視']);
 
   const toggleGroup = (key: string) => {
     setOpenGroups(prev => prev.includes(key) ? prev.filter(k => k !== key) : [...prev, key]);
