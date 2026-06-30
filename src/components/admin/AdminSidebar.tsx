@@ -44,7 +44,6 @@ const navItems: NavItem[] = [
       { href: '/admin/compliance', labelJa: '配信停止', labelEn: 'Unsubscribes' },
     ],
   },
-  { href: '/admin/csv', labelJa: 'CSV管理', labelEn: 'CSV Mgmt', icon: FileText },
   { href: '/admin/api-monitor', labelJa: 'API監視', labelEn: 'API Monitor', icon: Plug },
   { href: '/admin/analytics', labelJa: '分析', labelEn: 'Analytics', icon: BarChart2 },
   { href: '/admin/settings', labelJa: 'システム設定', labelEn: 'System Settings', icon: Settings },
