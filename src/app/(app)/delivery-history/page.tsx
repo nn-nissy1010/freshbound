@@ -109,25 +109,65 @@ export default function DeliveryHistoryPage() {
   const [sendMode, setSendMode] = useState<'review' | 'auto'>('review');
   const [activeTab, setActiveTab] = useState<'sent' | 'draft'>('sent');
   const [draftPreview, setDraftPreview] = useState<DraftEmail | null>(null);
+  const [editSubject, setEditSubject] = useState('');
+  const [editBody, setEditBody] = useState('');
   const [approvedDrafts, setApprovedDrafts] = useState<string[]>([]);
   const [rejectedDrafts, setRejectedDrafts] = useState<string[]>([]);
   const [draftEmails, setDraftEmails] = useState<DraftEmail[]>([]);
   const { toast } = useToast();
 
-  const approveDraft = useCallback((id: string) => {
-    setApprovedDrafts(prev => [...prev, id]);
-    toast('メールを承認しました', 'success');
+  const approveDraft = useCallback(async (id: string) => {
+    try {
+      const res = await fetch(`/api/emails/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'approve' }),
+      });
+      if (!res.ok) throw new Error('Failed');
+      setApprovedDrafts(prev => [...prev, id]);
+      toast('メールを配信キューに追加しました', 'success');
+    } catch {
+      toast('承認に失敗しました', 'error');
+    }
   }, [toast]);
 
-  const rejectDraft = useCallback((id: string) => {
-    setRejectedDrafts(prev => [...prev, id]);
-    toast('メールを却下しました', 'info');
+  const rejectDraft = useCallback(async (id: string) => {
+    try {
+      const res = await fetch(`/api/emails/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'reject' }),
+      });
+      if (!res.ok) throw new Error('Failed');
+      setRejectedDrafts(prev => [...prev, id]);
+      toast('メールを却下しました', 'info');
+    } catch {
+      toast('却下に失敗しました', 'error');
+    }
   }, [toast]);
 
-  const approveAll = useCallback(() => {
-    setApprovedDrafts(draftEmails.map(d => d.id));
-    toast(`レビュー待ち全件を承認しました（${draftEmails.length}件）`, 'success');
-  }, [draftEmails, toast]);
+  const approveAll = useCallback(async () => {
+    const pending = draftEmails.filter(d => !approvedDrafts.includes(d.id) && !rejectedDrafts.includes(d.id));
+    let succeeded = 0;
+    for (const draft of pending) {
+      try {
+        const res = await fetch(`/api/emails/${draft.id}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'approve' }),
+        });
+        if (res.ok) { setApprovedDrafts(prev => [...prev, draft.id]); succeeded++; }
+      } catch { /* continue */ }
+    }
+    toast(`${succeeded}件のメールを配信キューに追加しました`, 'success');
+  }, [draftEmails, approvedDrafts, rejectedDrafts, toast]);
+
+  useEffect(() => {
+    if (draftPreview) {
+      setEditSubject(draftPreview.subject);
+      setEditBody(draftPreview.body);
+    }
+  }, [draftPreview]);
 
   useEffect(() => {
     const fetchDrafts = async () => {
@@ -459,12 +499,12 @@ export default function DeliveryHistoryPage() {
             <div className="px-6 py-5 space-y-4">
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-1.5">件名</label>
-                <input type="text" defaultValue={draftPreview.subject}
+                <input type="text" value={editSubject} onChange={e => setEditSubject(e.target.value)}
                   className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500" />
               </div>
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-1.5">本文</label>
-                <textarea rows={12} defaultValue={draftPreview.body}
+                <textarea rows={12} value={editBody} onChange={e => setEditBody(e.target.value)}
                   className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono leading-relaxed" />
               </div>
             </div>
@@ -480,7 +520,19 @@ export default function DeliveryHistoryPage() {
                   却下
                 </button>
                 <button
-                  onClick={() => { approveDraft(draftPreview.id); setDraftPreview(null); }}
+                  onClick={async () => {
+                    // 編集内容を保存してから承認
+                    await fetch(`/api/emails/${draftPreview.id}`, {
+                      method: 'PATCH',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ subject: editSubject, body: editBody }),
+                    });
+                    setDraftEmails(prev => prev.map(d =>
+                      d.id === draftPreview.id ? { ...d, subject: editSubject, body: editBody } : d
+                    ));
+                    await approveDraft(draftPreview.id);
+                    setDraftPreview(null);
+                  }}
                   className="flex items-center gap-2 text-sm rounded-lg px-4 py-2 text-white font-medium"
                   style={{ background: 'linear-gradient(135deg, #3b82f6, #2563eb)' }}>
                   <Send size={14} />承認して送信

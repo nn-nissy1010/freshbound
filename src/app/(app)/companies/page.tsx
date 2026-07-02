@@ -1,12 +1,14 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import {
   Search, Download, Plus, Filter, HelpCircle,
   Mail, ChevronLeft, ChevronRight, MoreVertical,
   RefreshCw, Building2, ExternalLink, Target, X, Check,
 } from 'lucide-react';
 import Link from 'next/link';
+import { useToast } from '@/lib/toast';
 
 // ─── ICP types ───────────────────────────────────────────────────────────────
 
@@ -101,7 +103,10 @@ function ScoreBadge({ score }: { score: number }) {
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function CompaniesPage() {
+  const router = useRouter();
+  const { toast } = useToast();
   const [activeTab, setActiveTab] = useState<'list' | 'discover'>('list');
+  const [generating, setGenerating] = useState(false);
 
   // Company list state
   const [companies, setCompanies] = useState<Company[]>([]);
@@ -178,6 +183,50 @@ export default function CompaniesPage() {
   };
   const toggleAll = () => {
     setSelected(selected.length === companies.length ? [] : companies.map(c => c.id));
+  };
+
+  const deleteSelected = async () => {
+    if (selected.length === 0) return;
+    try {
+      const res = await fetch('/api/companies', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ companyIds: selected }),
+      });
+      if (!res.ok) throw new Error('削除に失敗しました');
+      setCompanies(prev => prev.filter(c => !selected.includes(c.id)));
+      setTotal(prev => prev - selected.length);
+      setSelected([]);
+      toast(`${selected.length}件の企業をリストから削除しました`, 'success');
+    } catch (err) {
+      toast(err instanceof Error ? err.message : '削除に失敗しました', 'error');
+    }
+  };
+
+  const generateEmails = async () => {
+    if (selected.length === 0 || generating) return;
+    setGenerating(true);
+    try {
+      const res = await fetch('/api/emails/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ companyIds: selected }),
+      });
+      const data = await res.json() as { results?: { error?: string }[]; error?: string };
+      if (!res.ok) throw new Error(data.error ?? '生成に失敗しました');
+      const succeeded = data.results?.filter(r => !r.error).length ?? 0;
+      const failed = data.results?.filter(r => r.error).length ?? 0;
+      toast(
+        `${succeeded}件のメールを生成しました${failed > 0 ? `（${failed}件失敗）` : ''}`,
+        succeeded > 0 ? 'success' : 'error'
+      );
+      setSelected([]);
+      if (succeeded > 0) router.push('/delivery-history');
+    } catch (err) {
+      toast(err instanceof Error ? err.message : 'メール生成に失敗しました', 'error');
+    } finally {
+      setGenerating(false);
+    }
   };
 
   return (
@@ -341,15 +390,21 @@ export default function CompaniesPage() {
             <span className="text-xs text-gray-500">{selected.length}件選択中</span>
             {selected.length > 0 && (
               <>
-                <button className="flex items-center gap-1.5 text-xs border border-gray-200 rounded-lg px-2.5 py-1.5 bg-white hover:bg-gray-50 text-gray-600">
+                <button
+                  onClick={generateEmails}
+                  disabled={generating}
+                  className="flex items-center gap-1.5 text-xs border border-gray-200 rounded-lg px-2.5 py-1.5 bg-white hover:bg-gray-50 text-gray-600 disabled:opacity-50"
+                >
                   <Mail size={12} />
-                  メール配信
+                  {generating ? 'AI生成中...' : 'AIメール生成'}
                 </button>
                 <button className="flex items-center gap-1.5 text-xs border border-gray-200 rounded-lg px-2.5 py-1.5 bg-white hover:bg-gray-50 text-gray-600">
                   <Download size={12} />
                   CSVエクスポート
                 </button>
-                <button className="flex items-center gap-1.5 text-xs border border-red-200 rounded-lg px-2.5 py-1.5 bg-white hover:bg-red-50 text-red-500">
+                <button
+                  onClick={deleteSelected}
+                  className="flex items-center gap-1.5 text-xs border border-red-200 rounded-lg px-2.5 py-1.5 bg-white hover:bg-red-50 text-red-500">
                   リストから削除
                 </button>
               </>

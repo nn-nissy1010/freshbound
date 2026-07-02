@@ -131,7 +131,7 @@ export async function GET() {
     .from(generatedEmails)
     .leftJoin(generatedEmailRecipients, eq(generatedEmails.id, generatedEmailRecipients.generatedEmailId))
     .leftJoin(companies, eq(generatedEmailRecipients.companyId, companies.id))
-    .where(eq(generatedEmails.tenantId, tenantId))
+    .where(and(eq(generatedEmails.tenantId, tenantId), eq(generatedEmails.status, 'draft')))
     .orderBy(generatedEmails.createdAt);
 
   return NextResponse.json(drafts);
