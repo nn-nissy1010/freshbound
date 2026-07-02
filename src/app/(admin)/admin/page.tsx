@@ -68,7 +68,7 @@ export default function AdminDashboard() {
       </div>
 
       {/* ── Row 1: 7 KPI cards ── */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3">
+      <div className="grid grid-cols-[repeat(auto-fit,minmax(150px,1fr))] gap-3">
         <StatCard label={t(lang, 'テナント総数', 'Total Tenants')} value="23" icon={Building2} color="#3b82f6" trend="+1" trendUp />
         <StatCard label={t(lang, 'アクティブ', 'Active')}          value="18" icon={Users}      color="#10b981" trend="+2" trendUp />
         <StatCard label={t(lang, '今日の配信数', 'Sent Today')}     value="128,456" icon={Mail}  color="#3b82f6" trend="+12.4%" trendUp />
