@@ -123,6 +123,24 @@ export async function GET(request: NextRequest) {
   });
 }
 
+// DELETE /api/companies — 複数企業を一括削除
+export async function DELETE(request: NextRequest) {
+  const tenantId = await getTenantId();
+  if (!tenantId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
+  const body = await request.json() as { companyIds?: string[] };
+  const { companyIds } = body;
+  if (!Array.isArray(companyIds) || companyIds.length === 0) {
+    return NextResponse.json({ error: 'companyIds is required' }, { status: 400 });
+  }
+
+  await db
+    .delete(companies)
+    .where(and(eq(companies.tenantId, tenantId), inArray(companies.id, companyIds)));
+
+  return NextResponse.json({ ok: true, deleted: companyIds.length });
+}
+
 // POST /api/companies — 企業を手動登録
 export async function POST(request: NextRequest) {
   const tenantId = await getTenantId();

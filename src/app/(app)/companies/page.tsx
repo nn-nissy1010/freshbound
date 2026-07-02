@@ -185,6 +185,24 @@ export default function CompaniesPage() {
     setSelected(selected.length === companies.length ? [] : companies.map(c => c.id));
   };
 
+  const deleteSelected = async () => {
+    if (selected.length === 0) return;
+    try {
+      const res = await fetch('/api/companies', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ companyIds: selected }),
+      });
+      if (!res.ok) throw new Error('削除に失敗しました');
+      setCompanies(prev => prev.filter(c => !selected.includes(c.id)));
+      setTotal(prev => prev - selected.length);
+      setSelected([]);
+      toast(`${selected.length}件の企業をリストから削除しました`, 'success');
+    } catch (err) {
+      toast(err instanceof Error ? err.message : '削除に失敗しました', 'error');
+    }
+  };
+
   const generateEmails = async () => {
     if (selected.length === 0 || generating) return;
     setGenerating(true);
@@ -384,7 +402,9 @@ export default function CompaniesPage() {
                   <Download size={12} />
                   CSVエクスポート
                 </button>
-                <button className="flex items-center gap-1.5 text-xs border border-red-200 rounded-lg px-2.5 py-1.5 bg-white hover:bg-red-50 text-red-500">
+                <button
+                  onClick={deleteSelected}
+                  className="flex items-center gap-1.5 text-xs border border-red-200 rounded-lg px-2.5 py-1.5 bg-white hover:bg-red-50 text-red-500">
                   リストから削除
                 </button>
               </>
